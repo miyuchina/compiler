@@ -155,7 +155,7 @@ class GoneLexer(Lexer):
     def ignore_block_comment(self, token):
         self.lineno += token.value.count('\n')
 
-    @_(r'/\*.*?\n')
+    @_(r'/\*[\s\S]*')
     def ignore_unterminated_comment(self, token):
         error(self.lineno, f"Unterminated comment {repr(token.value)}")
         self.lineno += 1
