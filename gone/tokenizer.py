@@ -147,9 +147,19 @@ class GoneLexer(Lexer):
 
     # One or more newlines \n\n\n...
 
-    @_(r'//.*?\n*?|/\*[\s\S]*?\*/')
-    def COMMENT(self, token):
+    @_(r'//.*?\n')
+    def ignore_line_comment(self, token):
+        self.lineno += 1
+
+    @_(r'/\*[\s\S]*?\*/')
+    def ignore_block_comment(self, token):
         self.lineno += token.value.count('\n')
+
+    @_(r'/\*.*?\n')
+    def ignore_unterminated_comment(self, token):
+        error(self.lineno, f"Unterminated comment {repr(token.value)}")
+        self.lineno += 1
+
 
     @_(r'\n+')
     def ignore_newlines(self, token):
@@ -193,7 +203,7 @@ class GoneLexer(Lexer):
     #   1.23e-1
     #   1e1
 
-    FLOAT = r'\d*\.\d*'
+    FLOAT = r'(\d+\.\d*)|(\d*\.\d+)'
 
     # ----- YOU IMPLEMENT
 
@@ -203,7 +213,7 @@ class GoneLexer(Lexer):
     #
     # Bonus: Recognize integers in different bases such as 0x1a, 0o13 or 0b111011.
 
-    INTEGER = r'\d+(?![a-z])|(0[a-z][\da-z]+)'
+    INTEGER = r'\b\d+(?![a-z])|(0[a-z][\da-z]+)\b'
 
     # ----- YOU IMPLEMENT
 
@@ -221,7 +231,13 @@ class GoneLexer(Lexer):
 
     # ----- YOU IMPLEMENT
 
-    CHAR = r"'\\[n\\']'|'\\x.*?'|'.'"
+    @_(r"'\\[n\\']'|'\\x[0-9a-f]{2}'|'.'")
+    def CHAR(self, token):
+        return token
+
+    @_(r"\'.")
+    def unterminated_char(self, token):
+        error(self.lineno, f"Unterminated character {repr(token.value)}")
 
     # ----------------------------------------------------------------------
     # *** YOU MUST COMPLETE : Write the regex and add keywords ***
@@ -237,7 +253,7 @@ class GoneLexer(Lexer):
 
     # ----- YOU IMPLEMENT
 
-    @_(r'[a-zA-Z_][a-zA-Z_0-9]*')
+    @_(r'\b[a-zA-Z_][a-zA-Z_0-9]*\b')
     def ID(self, token):
         keywords = {'const', 'var', 'print'}
         if token.value in keywords:
