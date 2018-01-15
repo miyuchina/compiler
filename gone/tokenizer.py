@@ -203,7 +203,7 @@ class GoneLexer(Lexer):
     #   1.23e-1
     #   1e1
 
-    FLOAT = r'(\d+\.\d*)|(\d*\.\d+)'
+    FLOAT = r'(\d+\.?\d*[Ee][+-]?\d+)|(\d+\.\d*)|(\d*\.\d+)'
 
     # ----- YOU IMPLEMENT
 
@@ -213,7 +213,7 @@ class GoneLexer(Lexer):
     #
     # Bonus: Recognize integers in different bases such as 0x1a, 0o13 or 0b111011.
 
-    INTEGER = r'\b\d+(?![a-z])|(0[a-z][\da-z]+)\b'
+    INTEGER = r'\b(\d+|(0[a-z][\da-z]+))\b'
 
     # ----- YOU IMPLEMENT
 
