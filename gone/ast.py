@@ -81,6 +81,42 @@ class Statement(AST):
 class Expression(AST):
     pass
 
+class DataType(AST):
+    pass
+
+class SimpleType(DataType):
+    name : str
+
+class Location(AST):
+    pass
+
+class ReadLocation(Expression):
+    location : Location
+
+class SimpleLocation(Location):
+    name : str
+
+class ConstDeclaration(Statement):
+    name  : SimpleLocation
+    value : Expression
+
+class VarDeclaration(Statement):
+    name     : SimpleLocation
+    datatype : DataType
+    value    : (Expression, type(None))
+
+class BinOp(Expression):
+    '''
+    A Binary operator such as 2 + 3 or x * y
+    '''
+    op    : str
+    left  : Expression
+    right : Expression
+
+class UnaryOp(Expression):
+    op    : str
+    value : Expression
+
 class Literal(Expression):
     '''
     A literal value such as 2, 2.5, or "two"
@@ -102,14 +138,6 @@ class FloatLiteral(Literal):
 
 class CharLiteral(Literal):
     value : str
-
-class BinOp(Expression):
-    '''
-    A Binary operator such as 2 + 3 or x * y
-    '''
-    op    : str
-    left  : Expression
-    right : Expression
 
 # ----------------------------------------------------------------------
 #                  DO NOT MODIFY ANYTHING BELOW HERE

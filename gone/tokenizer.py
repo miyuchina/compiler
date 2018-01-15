@@ -105,7 +105,7 @@ class GoneLexer(Lexer):
 
     tokens = {
         # keywords
-        'PRINT',
+        'PRINT', 'CONST', 'VAR',
                  
         # Identifiers
         'ID',
@@ -117,7 +117,7 @@ class GoneLexer(Lexer):
         'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'ASSIGN',
 
         # Other symbols
-        'LPAREN', 'RPAREN', 'COMMENT', 'SEMICOLON'
+        'LPAREN', 'RPAREN', 'SEMI'
     }
 
     # ----------------------------------------------------------------------
@@ -175,14 +175,14 @@ class GoneLexer(Lexer):
     # before shorter symbols that are a substring (for example, the
     # pattern for <= should go before <).
 
-    PLUS      = r'\+'      # Regex for a single plus sign
-    MINUS     = r'-'       # Regex for a single minus sign
-    TIMES     = r'\*'
-    DIVIDE    = r'/'
-    ASSIGN    = r'='
-    LPAREN    = r'\('
-    RPAREN    = r'\)'
-    SEMICOLON = r';'
+    PLUS   = r'\+'      # Regex for a single plus sign
+    MINUS  = r'-'       # Regex for a single minus sign
+    TIMES  = r'\*'
+    DIVIDE = r'/'
+    ASSIGN = r'='
+    LPAREN = r'\('
+    RPAREN = r'\)'
+    SEMI   = r';'
 
     # ----------------------------------------------------------------------
     # *** YOU MUST COMPLETE : write the regexs and additional code below ***

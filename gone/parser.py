@@ -85,6 +85,8 @@ class GoneParser(Parser):
     # precedence rules as in Python.  Instructions to be given in the project.
 
     precedence = (
+            ('left', 'PLUS', 'MINUS'),
+            ('left', 'TIMES', 'DIVIDE'),
     )
 
     # ----------------------------------------------------------------------
@@ -120,10 +122,76 @@ class GoneParser(Parser):
     #
     # Afterwards, add features by looking at the code in Tests/parsetest1-6.g
 
+    @_('statements statement')
+    def statements(self, p):
+        p.statements.append(p.statement)
+        return p.statements
+
+    @_('statement')
+    def statements(self, p):
+        return [p.statement]
+
+    @_('print_statement',
+       'assignment_statement')
+    def statement(self, p):
+        return p[0]
+
+    @_('const_statement',
+       'var_statement')
+    def assignment_statement(self, p):
+        return p[0]
+
+    @_('CONST location ASSIGN expression SEMI')
+    def const_statement(self, p):
+        return ConstDeclaration(p.location, p.expression, lineno=p.lineno)
+
+    @_('location ASSIGN expression SEMI')
+    def const_statement(self, p):
+        return ConstDeclaration(p.location, p.expression, lineno=p.lineno)
+
+    @_('VAR location datatype ASSIGN expression SEMI')
+    def var_statement(self, p):
+        return VarDeclaration(p.location, p.datatype, p.expression, lineno=p.lineno)
+
+    @_('VAR location datatype SEMI')
+    def var_statement(self, p):
+        return VarDeclaration(p.location, p.datatype, None, lineno=p.lineno)
 
     @_('PRINT expression SEMI')
     def print_statement(self, p):
-        return PrintStatement(p.expression)
+        return PrintStatement(p.expression, lineno=p.lineno)
+
+    @_('ID')
+    def datatype(self, p):
+        return SimpleType(p.ID, lineno=p.lineno)
+
+    @_('expression PLUS expression',
+       'expression MINUS expression',
+       'expression TIMES expression',
+       'expression DIVIDE expression')
+    def expression(self, p):
+        return BinOp(p[1], p.expression0, p.expression1, lineno=p.lineno)
+
+    @_('PLUS expression',
+       'MINUS expression')
+    def expression(self, p):
+        return UnaryOp(p[0], p.expression, lineno=p.lineno)
+
+    @_('LPAREN expression RPAREN')
+    def expression(self, p):
+        return p.expression
+
+    @_('read_location')
+    def expression(self, p):
+        return p.read_location
+
+    @_('location')
+    def read_location(self, p):
+        return ReadLocation(p.location, lineno=p.location.lineno)
+
+    @_('ID')
+    def location(self, p):
+        return SimpleLocation(p.ID, lineno=p.lineno)
 
     @_('literal')
     def expression(self, p):
@@ -131,15 +199,15 @@ class GoneParser(Parser):
 
     @_('INTEGER')
     def literal(self, p):
-        return IntegerLiteral(int(p.INTEGER))
+        return IntegerLiteral(int(p.INTEGER), lineno=p.lineno)
 
     @_('FLOAT')
     def literal(self, p):
-        return FloatLiteral(float(p.FLOAT))
+        return FloatLiteral(float(p.FLOAT), lineno=p.lineno)
 
     @_('CHAR')
     def literal(self, p):
-        return CharLiteral(eval(p.CHAR))
+        return CharLiteral(eval(p.CHAR), lineno=p.lineno)
 
     # ----------------------------------------------------------------------
     # DO NOT MODIFY
@@ -180,7 +248,7 @@ def main():
 
     # Output the resulting parse tree structure
     for depth, node in flatten(ast):
-        print('%s%s' % (' '*(4*depth), node))
+        print('%s: %s%s' % (getattr(node, 'lineno', None), ' '*(4*depth), node))
 
 if __name__ == '__main__':
     main()
