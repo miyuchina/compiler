@@ -108,16 +108,16 @@ class GoneLexer(Lexer):
         'PRINT',
                  
         # Identifiers
-        'ID', 
+        'ID',
 
         # Literals
         'INTEGER',
 
         # Operators 
-        'PLUS', 'MINUS', 
+        'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'ASSIGN',
 
         # Other symbols
-        'LPAREN', 'RPAREN',
+        'LPAREN', 'RPAREN', 'COMMENT', 'SEMICOLON'
     }
 
     # ----------------------------------------------------------------------
@@ -147,6 +147,15 @@ class GoneLexer(Lexer):
 
     # One or more newlines \n\n\n...
 
+    @_(r'//.*?\n*?|/\*[\s\S]*?\*/')
+    def COMMENT(self, token):
+        self.lineno += token.value.count('\n')
+
+    @_(r'\n+')
+    def ignore_newlines(self, token):
+        self.lineno += token.value.count('\n')
+
+
     # ----------------------------------------------------------------------
     # *** YOU MUST COMPLETE : write the regexs indicated below ***
     # 
@@ -156,13 +165,21 @@ class GoneLexer(Lexer):
     # before shorter symbols that are a substring (for example, the
     # pattern for <= should go before <).
 
-    PLUS = r'\+'      # Regex for a single plus sign
-    MINUS = r'-'      # Regex for a single minur sign
+    PLUS      = r'\+'      # Regex for a single plus sign
+    MINUS     = r'-'       # Regex for a single minus sign
+    TIMES     = r'\*'
+    DIVIDE    = r'/'
+    ASSIGN    = r'='
+    LPAREN    = r'\('
+    RPAREN    = r'\)'
+    SEMICOLON = r';'
 
     # ----------------------------------------------------------------------
     # *** YOU MUST COMPLETE : write the regexs and additional code below ***
     #
     # Tokens for literals, INTEGER, FLOAT, STRING. 
+
+    INTEGER = r'\d+?'
 
     # Floating point constant.   You must recognize floating point numbers in
     # the following formats:
