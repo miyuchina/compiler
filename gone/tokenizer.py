@@ -111,7 +111,7 @@ class GoneLexer(Lexer):
         'ID',
 
         # Literals
-        'INTEGER',
+        'INTEGER', 'FLOAT',
 
         # Operators 
         'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'ASSIGN',
@@ -179,8 +179,6 @@ class GoneLexer(Lexer):
     #
     # Tokens for literals, INTEGER, FLOAT, STRING. 
 
-    INTEGER = r'\d+?'
-
     # Floating point constant.   You must recognize floating point numbers in
     # the following formats:
     #
@@ -195,6 +193,8 @@ class GoneLexer(Lexer):
     #   1.23e-1
     #   1e1
 
+    FLOAT = r'\d*?\.\d*?'
+
     # ----- YOU IMPLEMENT
 
     # Integer literal
@@ -202,6 +202,8 @@ class GoneLexer(Lexer):
     #     1234             (decimal)
     #
     # Bonus: Recognize integers in different bases such as 0x1a, 0o13 or 0b111011.
+
+    INTEGER = r'\d+?'
 
     # ----- YOU IMPLEMENT
 
@@ -232,6 +234,13 @@ class GoneLexer(Lexer):
     # to match the appropriate keyword.
 
     # ----- YOU IMPLEMENT
+
+    @_(r'[a-zA-Z_][a-zA-Z_0-9]*')
+    def ID(self, token):
+        keywords = {'const', 'var', 'print'}
+        if token.value in keywords:
+            token.type = token.value.upper()
+        return token
 
     # ----------------------------------------------------------------------
     # Bad character error handling
