@@ -111,7 +111,7 @@ class GoneLexer(Lexer):
         'ID',
 
         # Literals
-        'INTEGER', 'FLOAT',
+        'INTEGER', 'FLOAT', 'CHAR',
 
         # Operators 
         'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'ASSIGN',
@@ -220,6 +220,8 @@ class GoneLexer(Lexer):
     #     '\xhh'  - Generic byte
 
     # ----- YOU IMPLEMENT
+
+    CHAR = r"'\\[n\\']'|'\\x.*?'|'.'"
 
     # ----------------------------------------------------------------------
     # *** YOU MUST COMPLETE : Write the regex and add keywords ***
