@@ -19,38 +19,37 @@ KEEP IT SIMPLE. REPEAT. SIMPLE.
 '''
 
 # List of builtin types.  These will get added to the symbol table
-builtin_types = [ 'int', 'float', 'string' ]
+builtin_types = [ 'int', 'float', 'char' ]
 
 # Dict mapping all valid binary operations to a result type
 _supported_binops = {
     ('int', '+', 'int') : 'int',
     ('int', '-', 'int') : 'int',
-    # You define
+    ('int', '*', 'int') : 'int',
+    ('int', '/', 'int') : 'int',
+    ('float', '+', 'float') : 'float',
+    ('float', '-', 'float') : 'float',
+    ('float', '*', 'float') : 'float',
+    ('float', '/', 'float') : 'float',
     }
 
 # Dict mapping all valid unary operations to result type
 _supported_unaryops = {
-    ('-', 'int') : 'int',
-    # You define
+    ('+', 'int')   : 'int',
+    ('+', 'float') : 'float',
+    ('-', 'int')   : 'int',
+    ('-', 'float') : 'float',
     }
     
 def check_binop(left_type, op, right_type):
     ''' 
     Check the validity of a binary operator. 
     '''
-    return _supported_binops.get((left_type, op, right_type))
+    return _supported_binops.get((left_type, op, right_type), 'error')
 
 def check_unaryop(op, type):
     '''
     Check the validity of a unary operator. 
     '''
-    return _supported_unaryops.get((op, type))
-
-
-
-
-          
-
-
-
+    return _supported_unaryops.get((op, type), 'error')
 
