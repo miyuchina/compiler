@@ -131,21 +131,18 @@ class GoneParser(Parser):
     def statements(self, p):
         return [p.statement]
 
-    @_('print_statement',
-       'assignment_statement')
+    @_('assignment_statement',
+       'const_statement',
+       'var_statement',
+       'print_statement')
     def statement(self, p):
         return p[0]
 
-    @_('const_statement',
-       'var_statement')
+    @_('location ASSIGN expression SEMI')
     def assignment_statement(self, p):
-        return p[0]
+        return Assignment(p.location, p.expression, lineno=p.lineno)
 
     @_('CONST location ASSIGN expression SEMI')
-    def const_statement(self, p):
-        return ConstDeclaration(p.location, p.expression, lineno=p.lineno)
-
-    @_('location ASSIGN expression SEMI')
     def const_statement(self, p):
         return ConstDeclaration(p.location, p.expression, lineno=p.lineno)
 

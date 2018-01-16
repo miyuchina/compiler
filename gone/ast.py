@@ -96,6 +96,10 @@ class ReadLocation(Expression):
 class SimpleLocation(Location):
     name : str
 
+class Assignment(Statement):
+    name  : Location
+    value : Expression
+
 class ConstDeclaration(Statement):
     name  : SimpleLocation
     value : Expression
