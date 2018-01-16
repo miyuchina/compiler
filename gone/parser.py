@@ -181,12 +181,8 @@ class GoneParser(Parser):
     def expression(self, p):
         return p.expression
 
-    @_('read_location')
-    def expression(self, p):
-        return p.read_location
-
     @_('location')
-    def read_location(self, p):
+    def expression(self, p):
         return ReadLocation(p.location, lineno=p.location.lineno)
 
     @_('ID')
