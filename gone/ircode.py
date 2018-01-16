@@ -147,59 +147,94 @@ class GenerateCode(ast.NodeVisitor):
     # on the names and structure of your AST nodes.
 
     def visit_IntegerLiteral(self, node):
-        target = self.new_register()
-        self.code.append(('MOVI', node.value, target))
-
-        # Save the name of the register where the value was placed
-        node.register = target
+        self._literal(node)
 
     def visit_FloatLiteral(self, node):
-        target = self.new_register()
-        self.code.append(('MOVF', node.value, target))
-        node.register = target
+        self._literal(node)
+
+    def visit_CharLiteral(self, node):
+        self._literal(node)
 
     def visit_BinOp(self, node):
         self.visit(node.left)
         self.visit(node.right)
-        op = node.op
-        if node.type.name == 'int':
-            if op == '+':
-                code = 'ADDI'
-            elif op == '-':
-                code = 'SUBI'
-            elif op == '*':
-                code = 'MULI'
-            elif op == '/':
-                code = 'DIVI'
-            else:
-                raise RuntimeError(f'Unknown binop {op}')
-        elif node.type.name == 'float':
-            if op == '+':
-                code = 'ADDF'
-            elif op == '-':
-                code = 'SUBF'
-            elif op == '*':
-                code = 'MULF'
-            elif op == '/':
-                code = 'DIVF'
-            else:
-                raise RuntimeError(f'Unknown binop {op}')
-
         target = self.new_register()
+        code = _build_instruction_name(node.op, node.type)
         inst = (code, node.left.register, node.right.register, target)
         self.code.append(inst)
         node.register = target
 
-    # CHALLENGE:  Figure out some more sane way to refactor the above code
+    def visit_UnaryOp(self, node):
+        self.visit(node.value)
+        if node.op == '-':
+            # put zero on stack
+            zero_target = self.new_register()
+            zero_code = _build_instruction_name('-', node.type)
+            zero_inst = (zero_code, 0 if node.type == 'int' else 0.0, zero_target)
+            self.code.append(zero_inst)
+            # do subtraction
+            target = self.new_register()
+            code = _build_instruction_name(node.op, node.type)
+            inst = (code, zero_target, node.value.register, target)
+            self.code.append(inst)
+        else:
+            # do addition
+            target = node.value.register
+        node.register = target
 
     def visit_PrintStatement(self, node):
         self.visit(node.value)
-        if node.value.type.name == 'int':
-            code = 'PRINTI'
-        elif node.value.type.name == 'float':
-            code = 'PRINTF'
+        code = 'PRINT' + _type_char(node.value.type)
         inst = (code, node.value.register)
         self.code.append(inst)
+
+    def visit_ConstDeclaration(self, node):
+        self.visit(node.value)
+        self._declare(node)
+        self._store(node)
+
+    def visit_VarDeclaration(self, node):
+        self.visit(node.value)
+        self._declare(node)
+        if node.value is not None:
+            self._store(node)
+
+    def visit_Assignment(self, node):
+        self.visit(node.value)
+        self._store(node)
+
+    def visit_ReadLocation(self, node):
+        target = self.new_register()
+        code = 'LOAD' + _type_char(node.type)
+        inst = (code, node.location.name, target)
+        self.code.append(inst)
+        node.register = target
+
+    def _literal(self, node):
+        target = self.new_register()
+        code = 'MOV' + _type_char(node.type)
+        value = node.value if node.type in {'int', 'float'} else ord(node.value)
+        self.code.append((code, value, target))
+        node.register = target
+
+    def _declare(self, node):
+        self.code.append(('VAR' + _type_char(node.type), node.name.name))
+
+    def _store(self, node):
+        code = 'STORE' + _type_char(node.value.type)
+        inst = (code, node.value.register, node.name.name)
+        self.code.append(inst)
+
+def _type_char(type_name):
+    return type_name[0].upper() if type_name in {'int', 'float'} else 'B'
+
+def _build_instruction_name(op_name, type_name):
+    op_table = {'+': 'ADD', '-': 'SUB', '*': 'MUL', '/': 'DIV'}
+    try:
+        return op_table[op_name] + _type_char(type_name)
+    except KeyError:
+        raise RuntimeError(f'Unknown operation {op}')
+
 
 # ----------------------------------------------------------------------
 #                          TESTING/MAIN PROGRAM
