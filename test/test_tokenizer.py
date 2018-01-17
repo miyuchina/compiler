@@ -82,6 +82,26 @@ class TestTokenizer(TestCase):
             for token in self.lexer.tokenize(text):
                 token
 
+    # project6
+    def test_boolean_operators(self):
+        text = "< > <= >= == != && || !"
+        tokens = ['LT', 'GT', 'LE', 'GE', 'EQ', 'NE', 'AND', 'OR', 'NOT']
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
+    def test_boolean_literals(self):
+        text = "true false"
+        tokens = text.upper().split()
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
+    def test_not_boolean_keywords(self):
+        text = "true_value falsehood"
+        tokens = [('ID', value) for value in text.split()]
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected[0])
+            self.assertEqual(token.value, expected[1])
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:

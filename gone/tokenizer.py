@@ -112,9 +112,11 @@ class GoneLexer(Lexer):
 
         # Literals
         'INTEGER', 'FLOAT', 'CHAR',
+        'TRUE', 'FALSE',
 
         # Operators 
         'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'ASSIGN',
+        'LT', 'GT', 'LE', 'GE', 'EQ', 'NE', 'AND', 'OR', 'NOT',
 
         # Other symbols
         'LPAREN', 'RPAREN', 'SEMI'
@@ -174,6 +176,16 @@ class GoneLexer(Lexer):
     # Caution: Definition order matters. Longer symbols should appear 
     # before shorter symbols that are a substring (for example, the
     # pattern for <= should go before <).
+
+    LE     = r'<='
+    GE     = r'>='
+    LT     = r'<'
+    GT     = r'>'
+    EQ     = r'=='
+    NE     = r'!='
+    AND    = r'&&'
+    OR     = r'\|\|'
+    NOT    = r'\!'
 
     PLUS   = r'\+'      # Regex for a single plus sign
     MINUS  = r'-'       # Regex for a single minus sign
@@ -255,7 +267,7 @@ class GoneLexer(Lexer):
 
     @_(r'\b[a-zA-Z_][a-zA-Z_0-9]*\b')
     def ID(self, token):
-        keywords = {'const', 'var', 'print'}
+        keywords = {'const', 'var', 'print', 'true', 'false'}
         if token.value in keywords:
             token.type = token.value.upper()
         return token
