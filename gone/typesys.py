@@ -45,6 +45,12 @@ _supported_binops = {
     ('float', '!=', 'float') : 'bool',
     ('bool', '&&', 'bool') : 'bool',
     ('bool', '||', 'bool') : 'bool',
+    ('char', '==', 'char') : 'bool',
+    ('char', '!=', 'char') : 'bool',
+    ('char', '<', 'char')  : 'bool',
+    ('char', '>', 'char')  : 'bool',
+    ('char', '<=', 'char')  : 'bool',
+    ('char', '>=', 'char')  : 'bool',
     }
 
 # Dict mapping all valid unary operations to result type

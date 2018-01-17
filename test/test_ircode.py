@@ -148,3 +148,64 @@ class TestIRCode(TestCase):
                   ('STOREB', 'R10', 'b')]
         self._test(source, output)
 
+    # project6
+    def test_boolean_literals(self):
+        source = """
+                 print true;
+                 print false;
+                 """
+        output = [('MOVI', 1, 'R1'),
+                  ('PRINTI', 'R1'),
+                  ('MOVI', 0, 'R2'),
+                  ('PRINTI', 'R2')]
+        self._test(source, output)
+
+    def test_boolean_binary_operations(self):
+        source = """
+                 print 3 < 4;
+                 print (3.0 > 6.0) || (5 >= 2);
+                 """
+        output = [('MOVI', 3, 'R1'),
+                  ('MOVI', 4, 'R2'),
+                  ('CMPI', '<', 'R1', 'R2', 'R3'),
+                  ('PRINTI', 'R3'),
+                  ('MOVF', 3.0, 'R4'),
+                  ('MOVF', 6.0, 'R5'),
+                  ('CMPF', '>', 'R4', 'R5', 'R6'),
+                  ('MOVI', 5, 'R7'),
+                  ('MOVI', 2, 'R8'),
+                  ('CMPI', '>=', 'R7', 'R8', 'R9'),
+                  ('OR', 'R6', 'R9', 'R10'),
+                  ('PRINTI', 'R10')]
+        self._test(source, output)
+
+    def test_boolean_unary_operations(self):
+        source = """
+                 print !true;
+                 """
+        output = [('MOVI', 1, 'R1'),
+                  ('MOVI', 1, 'R2'),
+                  ('SUBI', 'R2', 'R1', 'R3'),
+                  ('PRINTI', 'R3')]
+        self._test(source, output)
+
+    def test_boolean_variables_and_constants(self):
+        source = """
+                 const x = true;
+                 var y bool = false;
+                 var z bool;
+                 z = x || y;
+                 """
+        output = [('MOVI', 1, 'R1'),
+                  ('VARI', 'x'),
+                  ('STOREI', 'R1', 'x'),
+                  ('MOVI', 0, 'R2'),
+                  ('VARI', 'y'),
+                  ('STOREI', 'R2', 'y'),
+                  ('VARI', 'z'),
+                  ('LOADI', 'x', 'R3'),
+                  ('LOADI', 'y', 'R4'),
+                  ('OR', 'R3', 'R4', 'R5'),
+                  ('STOREI', 'R5', 'z')]
+        self._test(source, output)
+

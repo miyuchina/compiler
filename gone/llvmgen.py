@@ -183,7 +183,6 @@ class GenerateLLVM(object):
     def emit_STOREB(self, source, target):
         self.builder.store(self.temps[source], self.vars[target])
 
-
     # Binary + operator
     def emit_ADDI(self, left, right, target):
         self.temps[target] = self.builder.add(self.temps[left], self.temps[right], target)
@@ -211,6 +210,28 @@ class GenerateLLVM(object):
 
     def emit_DIVF(self, left, right, target):
         self.temps[target] = self.builder.fdiv(self.temps[left], self.temps[right], target)
+
+    def emit_CMPI(self, op, left, right, target):
+        tmp = self.builder.icmp_signed(op, self.temps[left], self.temps[right], 'tmp')
+        # LLVM compares produce a 1-bit integer as a result.  Since our IRcode using integers
+        # for bools, need to sign-extend the result up to the normal int_type to continue
+        # with further processing (otherwise you'll get a LLVM type error).
+        self.temps[target] = self.builder.zext(tmp, int_type, target)
+
+    def emit_CMPF(self, op, left, right, target):
+        tmp = self.builder.fcmp_ordered(op, self.temps[left], self.temps[right], 'tmp')
+        self.temps[target] = self.builder.zext(tmp, int_type, target)
+
+    def emit_CMPB(self, op, left, right, target):
+        tmp = self.builder.icmp_signed(op, self.temps[left], self.temps[right], 'tmp')
+        self.temps[target] = self.builder.zext(tmp, int_type, target)
+
+    # Logical ops
+    def emit_AND(self, left, right, target):
+        self.temps[target] = self.builder.and_(self.temps[left], self.temps[right], target)
+
+    def emit_OR(self, left, right, target):
+        self.temps[target] = self.builder.or_(self.temps[left], self.temps[right], target)
 
     # Print statements
     def emit_PRINTI(self, source):
@@ -254,8 +275,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-
-
-        
-        
-        

@@ -155,12 +155,15 @@ class GenerateCode(ast.NodeVisitor):
     def visit_CharLiteral(self, node):
         self._literal(node)
 
+    def visit_BoolLiteral(self, node):
+        self._literal(node)
+
     def visit_BinOp(self, node):
         self.visit(node.left)
         self.visit(node.right)
         target = self.new_register()
-        code = _build_instruction_name(node.op, node.type)
-        inst = (code, node.left.register, node.right.register, target)
+        code = _build_instruction_name(node.op, node.left.type)
+        inst = (*code, node.left.register, node.right.register, target)
         self.code.append(inst)
         node.register = target
 
@@ -175,8 +178,13 @@ class GenerateCode(ast.NodeVisitor):
             # do subtraction
             target = self.new_register()
             code = _build_instruction_name(node.op, node.type)
-            inst = (code, zero_target, node.value.register, target)
+            inst = (*code, zero_target, node.value.register, target)
             self.code.append(inst)
+        elif node.op == '!':
+            one_target = self.new_register()
+            self.code.append(('MOVI', 1, one_target))
+            target = self.new_register()
+            self.code.append(('SUBI', one_target, node.value.register, target))
         else:
             # do addition
             target = node.value.register
@@ -213,7 +221,12 @@ class GenerateCode(ast.NodeVisitor):
     def _literal(self, node):
         target = self.new_register()
         code = 'MOV' + _type_char(node.type)
-        value = node.value if node.type in {'int', 'float'} else ord(node.value)
+        if node.type in {'int', 'float'}:
+            value = node.value
+        elif node.type == 'char':
+            value = ord(node.value)
+        else:
+            value = 1 if node.value else 0
         self.code.append((code, value, target))
         node.register = target
 
@@ -226,13 +239,23 @@ class GenerateCode(ast.NodeVisitor):
         self.code.append(inst)
 
 def _type_char(type_name):
-    return type_name[0].upper() if type_name in {'int', 'float'} else 'B'
+    if type_name in {'int', 'float'}:
+        return type_name[0].upper()
+    elif type_name == 'char':
+        return 'B'
+    return 'I'
 
 def _build_instruction_name(op_name, type_name):
     op_table = {'+': 'ADD', '-': 'SUB', '*': 'MUL', '/': 'DIV'}
-    try:
-        return op_table[op_name] + _type_char(type_name)
-    except KeyError:
+    and_or = {'&&': 'AND', '||': 'OR'}
+    rel_table = {op: 'CMP' for op in ('<', '>', '<=', '>=', '==', '!=')}
+    if op_name in op_table:
+        return (op_table[op_name] + _type_char(type_name),)
+    elif op_name in rel_table:
+        return (rel_table[op_name] + _type_char(type_name), op_name)
+    elif op_name in and_or:
+        return (and_or[op_name],)
+    else:
         raise RuntimeError(f'Unknown operation {op}')
 
 
@@ -276,3 +299,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
