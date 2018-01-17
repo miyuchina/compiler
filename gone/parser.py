@@ -85,8 +85,12 @@ class GoneParser(Parser):
     # precedence rules as in Python.  Instructions to be given in the project.
 
     precedence = (
+            ('nonassoc', 'OR'),
+            ('nonassoc', 'AND'),
+            ('nonassoc', 'LE', 'GE', 'LT', 'GT', 'EQ', 'NE'),
             ('left', 'PLUS', 'MINUS'),
             ('left', 'TIMES', 'DIVIDE'),
+            ('right', 'NOT'),
     )
 
     # ----------------------------------------------------------------------
@@ -178,6 +182,21 @@ class GoneParser(Parser):
     def expression(self, p):
         return p.expression
 
+    @_('expression LE expression',
+       'expression GE expression',
+       'expression LT expression',
+       'expression GT expression',
+       'expression EQ expression',
+       'expression NE expression',
+       'expression AND expression',
+       'expression OR expression')
+    def expression(self, p):
+        return BinOp(p[1], p.expression0, p.expression1, lineno=p.lineno)
+
+    @_('NOT expression')
+    def expression(self, p):
+        return UnaryOp(p.NOT, p.expression, lineno=p.lineno)
+
     @_('location')
     def expression(self, p):
         return ReadLocation(p.location, lineno=p.location.lineno)
@@ -201,6 +220,10 @@ class GoneParser(Parser):
     @_('CHAR')
     def literal(self, p):
         return CharLiteral(eval(p.CHAR), lineno=p.lineno)
+
+    @_('TRUE', 'FALSE')
+    def literal(self, p):
+        return BoolLiteral(eval(p[0].title()), lineno=p.lineno)
 
     # ----------------------------------------------------------------------
     # DO NOT MODIFY

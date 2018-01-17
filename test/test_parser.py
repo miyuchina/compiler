@@ -137,10 +137,52 @@ class TestParser(TestCase):
         for token, lineno in zip(self.parse(text), (1, 5, 6, 7)):
             self.assertEqual(token.lineno, lineno)
 
+    # project6
+    def test_print_boolean_literals(self):
+        token1, token2 = self.parse('print true;\nprint false;')
+        self.assertIsInstance(token1.value, BoolLiteral)
+        self.assertEqual(token1.value.value, True)
+        self.assertIsInstance(token2.value, BoolLiteral)
+        self.assertEqual(token2.value.value, False)
+
+    def test_binary_boolean_operations(self):
+        text = ("print 1 < 2;\n"
+                "print 1 && 2;\n")
+        token1, token2 = self.parse(text)
+        self.assertIsInstance(token1.value, BinOp)
+        self.assertEqual(token1.value.op, '<')
+        self.assertIsInstance(token2.value, BinOp)
+        self.assertEqual(token2.value.op, '&&')
+
+    def test_unary_boolean_operations(self):
+        token, = self.parse("print !true;\n")
+        self.assertIsInstance(token.value, UnaryOp)
+        self.assertEqual(token.value.op, '!')
+        self.assertIsInstance(token.value.value, BoolLiteral)
+        self.assertEqual(token.value.value.value, True)
+
+    def test_no_chained_boolean_operations(self):
+        with self.assertRaises(SyntaxError):
+            token, = self.parse("print 1 == 2 >= 3;\n")
+
+    def test_assign_boolean_values(self):
+        text = ("var x bool = true;\n"
+                "const y = 1 < 2;\n")
+        token1, token2 = self.parse(text)
+        self.assertIsInstance(token1, VarDeclaration)
+        self.assertIsInstance(token1.name, SimpleLocation)
+        self.assertIsInstance(token1.datatype, SimpleType)
+        self.assertEqual(token1.datatype.name, 'bool')
+        self.assertIsInstance(token1.value, BoolLiteral)
+        self.assertIsInstance(token2.value, BinOp)
+        self.assertIsInstance(token2, ConstDeclaration)
+        self.assertIsInstance(token2.name, SimpleLocation)
+        self.assertIsInstance(token2.value, BinOp)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:
         sys.stderr.write(str(*args) + '\n')
     else:
-        raise AssertionError(args)
+        raise SyntaxError(args)
 

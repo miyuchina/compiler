@@ -143,6 +143,9 @@ class FloatLiteral(Literal):
 class CharLiteral(Literal):
     value : str
 
+class BoolLiteral(Literal):
+    value : bool
+
 # ----------------------------------------------------------------------
 #                  DO NOT MODIFY ANYTHING BELOW HERE
 # ----------------------------------------------------------------------
