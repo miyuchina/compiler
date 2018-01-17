@@ -114,7 +114,7 @@ class TestChecker(TestCase):
         expected_output = [('2: TypeError: assigning type int to "a" of type bool',)]
         self.assertEqual(expected_output, self.captured_output)
 
-    def test_boolean_op_types(self):
+    def test_boolean_binary_operation_types(self):
         source = ("var a int = 3;\n"
                   "var b int = 4;\n"
                   "var c bool = (a != 0) || (b != 0);\n"
@@ -122,6 +122,16 @@ class TestChecker(TestCase):
         self.check_program(source)
         expected_output = [('4: TypeError: performing "||" on int and int',),
                            ('4: TypeError: assigning type error to "d" of type bool',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_boolean_unary_operation_types(self):
+        source = ("var a bool = true;\n"
+                  "a = !a;\n"
+                  "var b int = 3;\n"
+                  "b = !b;\n")
+        self.check_program(source)
+        expected_output = [('4: TypeError: performing "!" on int',),
+                           ('4: TypeError: assigning type error to "b" of type int',)]
         self.assertEqual(expected_output, self.captured_output)
 
     def mock_print(self, *args, **kwargs):
