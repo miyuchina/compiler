@@ -17,9 +17,8 @@ Further instructions are contained in the comments below.
 # LLVM imports. Don't change this.
 
 from llvmlite.ir import (
-    Module, IRBuilder, Function, IntType, DoubleType, VoidType, Constant, GlobalVariable,
-    FunctionType
-    )
+    Module, IRBuilder, Function, IntType, DoubleType, VoidType, Constant,
+    GlobalVariable, FunctionType)
 
 # Declare the LLVM type objects that you want to use for the low-level
 # in our intermediate code.  Basically, you're going to need to
@@ -112,16 +111,16 @@ class GenerateLLVM(object):
                                                 name="_print_float")
 
         self.runtime['_print_byte'] = Function(self.module,
-                                                FunctionType(void_type, [byte_type]),
-                                                name="_print_byte")
+                                               FunctionType(void_type, [byte_type]),
+                                               name="_print_byte")
 
     def generate_code(self, ircode):
         # Given a sequence of SSA intermediate code tuples, generate LLVM
         # instructions using the current builder (self.builder).  Each
         # opcode tuple (opcode, args) is dispatched to a method of the
         # form self.emit_opcode(args)
-
         for opcode, *args in ircode:
+
             if hasattr(self, 'emit_'+opcode):
                 getattr(self, 'emit_'+opcode)(*args)
             else:
@@ -141,10 +140,10 @@ class GenerateLLVM(object):
         self.temps[target] = Constant(int_type, value)
 
     def emit_MOVF(self, value, target):
-        pass                # You must implement
+        self.temps[target] = Constant(float_type, value)
 
     def emit_MOVB(self, value, target):
-        pass                # You must implement
+        self.temps[target] = Constant(byte_type, value)
 
     # Allocation of variables.  Declare as global variables and set to
     # a sensible initial value.
@@ -154,10 +153,14 @@ class GenerateLLVM(object):
         self.vars[name] = var
 
     def emit_VARF(self, name):
-        pass                # You must implement
+        var = GlobalVariable(self.module, float_type, name=name)
+        var.initializer = Constant(float_type, 0.0)
+        self.vars[name] = var
 
     def emit_VARB(self, name):
-        pass                # You must implement
+        var = GlobalVariable(self.module, byte_type, name=name)
+        var.initializer = Constant(byte_type, 0)
+        self.vars[name] = var
 
     # Load/store instructions for variables.  Load needs to pull a
     # value from a global variable and store in a temporary. Store
@@ -166,20 +169,19 @@ class GenerateLLVM(object):
         self.temps[target] = self.builder.load(self.vars[name], target)
 
     def emit_LOADF(self, name, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.load(self.vars[name], target)
 
     def emit_LOADB(self, name, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.load(self.vars[name], target)
 
     def emit_STOREI(self, source, target):
         self.builder.store(self.temps[source], self.vars[target])
 
     def emit_STOREF(self, source, target):
-        pass                 # You must implement
-
+        self.builder.store(self.temps[source], self.vars[target])
 
     def emit_STOREB(self, source, target):
-        pass                 # You must implement
+        self.builder.store(self.temps[source], self.vars[target])
 
 
     # Binary + operator
@@ -187,38 +189,38 @@ class GenerateLLVM(object):
         self.temps[target] = self.builder.add(self.temps[left], self.temps[right], target)
 
     def emit_ADDF(self, left, right, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.fadd(self.temps[left], self.temps[right], target)
 
     # Binary - operator
     def emit_SUBI(self, left, right, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.sub(self.temps[left], self.temps[right], target)
 
     def emit_SUBF(self, left, right, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.fsub(self.temps[left], self.temps[right], target)
 
     # Binary * operator
     def emit_MULI(self, left, right, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.mul(self.temps[left], self.temps[right], target)
 
     def emit_MULF(self, left, right, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.fmul(self.temps[left], self.temps[right], target)
 
     # Binary / operator
     def emit_DIVI(self, left, right, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.sdiv(self.temps[left], self.temps[right], target)
 
     def emit_DIVF(self, left, right, target):
-        pass                 # You must implement
+        self.temps[target] = self.builder.fdiv(self.temps[left], self.temps[right], target)
 
     # Print statements
     def emit_PRINTI(self, source):
         self.builder.call(self.runtime['_print_int'], [self.temps[source]])
 
     def emit_PRINTF(self, source):
-        pass                 # You must implement
+        self.builder.call(self.runtime['_print_float'], [self.temps[source]])
 
     def emit_PRINTB(self, source):
-        pass                 # You must implement
+        self.builder.call(self.runtime['_print_byte'], [self.temps[source]])
 
 #######################################################################
 #                      TESTING/MAIN PROGRAM
