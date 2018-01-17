@@ -169,7 +169,7 @@ class GenerateCode(ast.NodeVisitor):
         if node.op == '-':
             # put zero on stack
             zero_target = self.new_register()
-            zero_code = _build_instruction_name('-', node.type)
+            zero_code = 'MOV' + _type_char(node.type)
             zero_inst = (zero_code, 0 if node.type == 'int' else 0.0, zero_target)
             self.code.append(zero_inst)
             # do subtraction
