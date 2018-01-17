@@ -19,18 +19,32 @@ KEEP IT SIMPLE. REPEAT. SIMPLE.
 '''
 
 # List of builtin types.  These will get added to the symbol table
-builtin_types = [ 'int', 'float', 'char' ]
+builtin_types = [ 'int', 'float', 'char', 'bool' ]
 
 # Dict mapping all valid binary operations to a result type
 _supported_binops = {
-    ('int', '+', 'int') : 'int',
-    ('int', '-', 'int') : 'int',
-    ('int', '*', 'int') : 'int',
-    ('int', '/', 'int') : 'int',
-    ('float', '+', 'float') : 'float',
-    ('float', '-', 'float') : 'float',
-    ('float', '*', 'float') : 'float',
-    ('float', '/', 'float') : 'float',
+    ('int', '+', 'int')  : 'int',
+    ('int', '-', 'int')  : 'int',
+    ('int', '*', 'int')  : 'int',
+    ('int', '/', 'int')  : 'int',
+    ('int', '<', 'int')  : 'bool',
+    ('int', '>', 'int')  : 'bool',
+    ('int', '<=', 'int') : 'bool',
+    ('int', '>=', 'int') : 'bool',
+    ('int', '==', 'int') : 'bool',
+    ('int', '!=', 'int') : 'bool',
+    ('float', '+', 'float')  : 'float',
+    ('float', '-', 'float')  : 'float',
+    ('float', '*', 'float')  : 'float',
+    ('float', '/', 'float')  : 'float',
+    ('float', '<', 'float')  : 'bool',
+    ('float', '>', 'float')  : 'bool',
+    ('float', '<=', 'float') : 'bool',
+    ('float', '>=', 'float') : 'bool',
+    ('float', '==', 'float') : 'bool',
+    ('float', '!=', 'float') : 'bool',
+    ('bool', '&&', 'bool') : 'bool',
+    ('bool', '||', 'bool') : 'bool',
     }
 
 # Dict mapping all valid unary operations to result type
@@ -39,6 +53,7 @@ _supported_unaryops = {
     ('+', 'float') : 'float',
     ('-', 'int')   : 'int',
     ('-', 'float') : 'float',
+    ('!', 'bool')  : 'bool',
     }
     
 def check_binop(left_type, op, right_type):

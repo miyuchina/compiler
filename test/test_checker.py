@@ -106,6 +106,24 @@ class TestChecker(TestCase):
                            ('3: NameError: cannot declare variable with name int',)]
         self.assertEqual(expected_output, self.captured_output)
 
+    # project6
+    def test_boolean_types(self):
+        source = ("var a bool = true;\n"
+                  "a = 1;\n")
+        self.check_program(source)
+        expected_output = [('2: TypeError: assigning type int to "a" of type bool',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_boolean_op_types(self):
+        source = ("var a int = 3;\n"
+                  "var b int = 4;\n"
+                  "var c bool = (a != 0) || (b != 0);\n"
+                  "var d bool = a || b;\n")
+        self.check_program(source)
+        expected_output = [('4: TypeError: performing "||" on int and int',),
+                           ('4: TypeError: assigning type error to "d" of type bool',)]
+        self.assertEqual(expected_output, self.captured_output)
+
     def mock_print(self, *args, **kwargs):
         self.captured_output.append(args)
 
