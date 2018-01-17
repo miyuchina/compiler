@@ -165,6 +165,9 @@ class TestParser(TestCase):
         with self.assertRaises(SyntaxError):
             token, = self.parse("print 1 == 2 >= 3;\n")
 
+    def test_chained_and_or(self):
+        self.parse("print 1 < 2 || 2 < 3 || 3 < 4;\n")
+
     def test_assign_boolean_values(self):
         text = ("var x bool = true;\n"
                 "const y = 1 < 2;\n")

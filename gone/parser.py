@@ -85,8 +85,8 @@ class GoneParser(Parser):
     # precedence rules as in Python.  Instructions to be given in the project.
 
     precedence = (
-            ('nonassoc', 'OR'),
-            ('nonassoc', 'AND'),
+            ('left', 'OR'),
+            ('left', 'AND'),
             ('nonassoc', 'LE', 'GE', 'LT', 'GT', 'EQ', 'NE'),
             ('left', 'PLUS', 'MINUS'),
             ('left', 'TIMES', 'DIVIDE'),
