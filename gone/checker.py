@@ -130,7 +130,7 @@ class CheckProgramVisitor(NodeVisitor):
         if name in builtin_types:
             error(node.lineno, f'NameError: cannot declare variable with name {name}')
             return
-        elif name not in self.symbols:
+        elif name not in self.symbols.maps[0]:
             self.symbols[name] = node
             self.visit(node.value)
             node.type = node.value.type
@@ -143,7 +143,7 @@ class CheckProgramVisitor(NodeVisitor):
         if name in builtin_types:
             error(node.lineno, f'NameError: cannot declare variable with name {name}')
             return
-        elif name not in self.symbols:
+        elif name not in self.symbols.maps[0]:
             self.symbols[name] = node
             self.visit(node.datatype)
             node.type = node.datatype.type
@@ -163,19 +163,23 @@ class CheckProgramVisitor(NodeVisitor):
             error(node.lineno, f'TypeError: assigning type {node.value.type} to "{node.name.name}" of type {node.name.type}')
 
     def visit_IfStatement(self, node):
+        self.symbols = self.symbols.new_child()
         self.visit(node.condition)
         if node.condition.type != 'bool':
             error(node.lineno, 'TypeError: if-statement condition is not a boolean')
             return
         self.visit(node.then_block)
         self.visit(node.else_block)
+        self.symbols = self.symbols.parents
 
     def visit_WhileStatement(self, node):
+        self.symbols = self.symbols.new_child()
         self.visit(node.condition)
         if node.condition.type != 'bool':
             error(node.lineno, 'TypeError: while-statement condition is not a boolean')
             return
         self.visit(node.loop_block)
+        self.symbols = self.symbols.parents
 
     def visit_FuncDeclaration(self, node):
         self.symbols[node.name] = node
@@ -205,6 +209,27 @@ class CheckProgramVisitor(NodeVisitor):
         self.symbols[node.name] = node
         self.visit(node.datatype)
         node.type = node.datatype.type
+
+    def visit_FunctionCall(self, node):
+        node.name.usage = 'read'
+        self.visit(node.name)
+        self.visit(node.arguments)
+        try:
+            func = self.symbols[node.name.name]
+            if len(func.arguments) != len(node.arguments):
+                error(node.lineno, f'TypeError: {func.name}() takes {len(func.arguments)} argument{"s" if len(func.arguments) > 1 else ""} but {len(node.arguments)} given')
+                node.type = 'error'
+                return
+            expected_types = tuple(arg.type for arg in func.arguments)
+            call_types = tuple(arg.type for arg in node.arguments)
+            if expected_types != call_types:
+                error(node.lineno, f'TypeError: {func.name}() expecting {expected_types}, got {call_types}')
+                node.type = 'error'
+                return
+        except KeyError:
+            node.type = 'error'
+            return
+        node.type = node.name.type
 
     def visit_ReturnStatement(self, node):
         self.visit(node.value)

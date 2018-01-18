@@ -217,13 +217,68 @@ class TestChecker(TestCase):
         self.assertEqual(expected_output, self.captured_output)
 
     def test_multiple_variable_declaration_in_functions(self):
-        source = ("func foo() int {\n"
-                  "    var x int;\n"
+        source = ("func foo(x int) int {\n"
                   "    var x int;\n"
                   "    return 0;\n"
                   "}\n")
         self.check_program(source)
-        expected_output = [('3: NameError: variable "x" already defined.',)]
+        expected_output = [('2: NameError: variable "x" already defined.',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_global_variable_redeclared_in_function_scope(self):
+        source = ("const x = 1;\n"
+                  "func foo() int {\n"
+                  "    var x int;\n"
+                  "    return 0;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_local_variable_redeclared_in_global_scope(self):
+        source = ("func foo() int {\n"
+                  "    var x int;\n"
+                  "    return 0;\n"
+                  "}\n"
+                  "const x = 1;\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_function_call(self):
+        source = ("func add(x int, y int) int {\n"
+                  "    return x + y;\n"
+                  "}\n"
+                  "var a int = add(1, 2);\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_undefined_function_call(self):
+        source = "var a int = add(1, 2);\n"
+        self.check_program(source)
+        expected_output = [('1: NameError: symbol "add" undefined.',),
+                           ('1: TypeError: assigning type error to "a" of type int',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_function_call_with_wrong_number_of_arguments(self):
+        source = ("func add(x int, y int) int {\n"
+                  "    return x + y;\n"
+                  "}\n"
+                  "var a int = add(1, 2, 3);\n")
+        self.check_program(source)
+        expected_output = [('4: TypeError: add() takes 2 arguments but 3 given',),
+                           ('4: TypeError: assigning type error to "a" of type int',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_function_call_with_wrong_argument_types(self):
+        source = ("func add(x int, y int) int {\n"
+                  "    return x + y;\n"
+                  "}\n"
+                  "var a int = add(1, 2.0);\n")
+        self.check_program(source)
+        expected_output = [('4: TypeError: add() expecting (\'int\', \'int\'), got (\'int\', \'float\')',),
+                           ('4: TypeError: assigning type error to "a" of type int',)]
         self.assertEqual(expected_output, self.captured_output)
 
     def mock_print(self, *args, **kwargs):
