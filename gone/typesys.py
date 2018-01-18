@@ -19,7 +19,7 @@ KEEP IT SIMPLE. REPEAT. SIMPLE.
 '''
 
 # List of builtin types.  These will get added to the symbol table
-builtin_types = [ 'int', 'float', 'char', 'bool' ]
+builtin_types = [ 'int', 'float', 'char', 'bool', 'void' ]
 
 # Dict mapping all valid binary operations to a result type
 _supported_binops = {

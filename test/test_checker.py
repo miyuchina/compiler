@@ -167,6 +167,65 @@ class TestChecker(TestCase):
         expected_output = [('1: TypeError: while-statement condition is not a boolean',)]
         self.assertEqual(expected_output, self.captured_output)
 
+    # project8
+    def test_correct_function_types(self):
+        source = ("func add(x int, y int) int {\n"
+                  "    return x + y;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_function_wrong_local_types(self):
+        source = ("func add(x int, y float) int {\n"
+                  "    return x + y;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = [('2: TypeError: performing "+" on int and float',),
+                           ('2: TypeError: returning error instead of int',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_function_wrong_return_type(self):
+        source = ("func add(x float, y float) int {\n"
+                  "    return x + y;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = [('2: TypeError: returning float instead of int',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_function_no_return(self):
+        source = ("func main() void {\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_function_with_empty_return(self):
+        source = ("func main() void {\n"
+                  "    return;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_wrong_function_with_empty_return(self):
+        source = ("func main() int {\n"
+                  "    return;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = [('2: TypeError: returning void instead of int',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_multiple_variable_declaration_in_functions(self):
+        source = ("func foo() int {\n"
+                  "    var x int;\n"
+                  "    var x int;\n"
+                  "    return 0;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = [('3: NameError: variable "x" already defined.',)]
+        self.assertEqual(expected_output, self.captured_output)
+
     def mock_print(self, *args, **kwargs):
         self.captured_output.append(args)
 

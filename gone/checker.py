@@ -108,6 +108,7 @@ fumble around a bit at first.
 from .errors import error
 from .ast import *
 from .typesys import check_binop, check_unaryop, builtin_types
+from collections import ChainMap
 
 class CheckProgramVisitor(NodeVisitor):
     '''
@@ -118,7 +119,7 @@ class CheckProgramVisitor(NodeVisitor):
     '''
     def __init__(self):
         # Initialize the symbol table
-        self.symbols = {}
+        self.symbols = ChainMap({}, {})
 
     def visit_ConstDeclaration(self, node):
         # For a declaration, you'll need to check that it isn't already defined.
@@ -175,6 +176,39 @@ class CheckProgramVisitor(NodeVisitor):
             error(node.lineno, 'TypeError: while-statement condition is not a boolean')
             return
         self.visit(node.loop_block)
+
+    def visit_FuncStatement(self, node):
+        self.symbols[node.name] = node
+        self.visit(node.datatype)
+        node.type = node.datatype.type
+        self.symbols = self.symbols.new_child()
+        self.visit(node.arguments)
+
+        returned = False
+        for statement in node.body:
+            self.visit(statement)
+            if isinstance(statement, ReturnStatement):
+                returned = True
+                if statement.type != node.type:
+                    error(statement.lineno, f'TypeError: returning {statement.type} instead of {node.type}')
+                    node.type = 'error'
+                break
+        if not returned:
+            if node.type != 'void':
+                error(node.lineno, f'TypeError: missing return statement')
+                node.type = 'error'
+            else:
+                node.type = 'void'
+        self.symbols = self.symbols.parents
+
+    def visit_FuncArgument(self, node):
+        self.symbols[node.name] = node
+        self.visit(node.datatype)
+        node.type = node.datatype.type
+
+    def visit_ReturnStatement(self, node):
+        self.visit(node.value)
+        node.type = node.value.type if node.value is not None else 'void'
 
     def visit_PrintStatement(self, node):
         self.visit(node.value)
