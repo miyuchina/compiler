@@ -161,6 +161,19 @@ class CheckProgramVisitor(NodeVisitor):
         if node.name.type != node.value.type:
             error(node.lineno, f'TypeError: assigning type {node.value.type} to "{node.name.name}" of type {node.name.type}')
 
+    def visit_IfStatement(self, node):
+        self.visit(node.condition)
+        if node.condition.type != 'bool':
+            error(node.lineno, 'TypeError: if-statement condition is not a boolean')
+        self.visit(node.then_block)
+        self.visit(node.else_block)
+
+    def visit_WhileStatement(self, node):
+        self.visit(node.condition)
+        if node.condition.type != 'bool':
+            error(node.lineno, 'TypeError: while-statement condition is not a boolean')
+        self.visit(node.loop_block)
+
     def visit_PrintStatement(self, node):
         self.visit(node.value)
 

@@ -134,6 +134,39 @@ class TestChecker(TestCase):
                            ('4: TypeError: assigning type error to "b" of type int',)]
         self.assertEqual(expected_output, self.captured_output)
 
+    # project7
+    def test_if_statement_types(self):
+        source = ("if 2 < 3 {\n"
+                  "    var a int = 3;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_if_statement_wrong_types(self):
+        source = ("if 2 + 3 {\n"
+                  "    var a int = 3;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = [('1: TypeError: if-statement condition is not a boolean',),]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_while_statement_types(self):
+        source = ("while true {\n"
+                  "    var a int = 1;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_while_statement_wrong_types(self):
+        source = ("while 't' {\n"
+                  "    var a int = 1;\n"
+                  "}\n")
+        self.check_program(source)
+        expected_output = [('1: TypeError: while-statement condition is not a boolean',)]
+        self.assertEqual(expected_output, self.captured_output)
+
     def mock_print(self, *args, **kwargs):
         self.captured_output.append(args)
 
