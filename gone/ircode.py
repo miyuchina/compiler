@@ -126,10 +126,9 @@ class GenerateCode(ast.NodeVisitor):
     Node visitor class that creates 3-address encoded instruction sequences.
     '''
     def __init__(self):
-        # counter for registers
         self.register_count = 0
+        self.label_count = 0
 
-        # The generated code (list of tuples)
         self.code = []
 
     def new_register(self):
@@ -138,6 +137,10 @@ class GenerateCode(ast.NodeVisitor):
          '''
          self.register_count += 1
          return f'R{self.register_count}'
+
+    def new_label(self):
+        self.label_count += 1
+        return f'B{self.label_count}'
 
     # You must implement visit_Nodename methods for all of the other
     # AST nodes.  In your code, you will need to make instructions
@@ -195,6 +198,33 @@ class GenerateCode(ast.NodeVisitor):
         code = 'PRINT' + _type_char(node.value.type)
         inst = (code, node.value.register)
         self.code.append(inst)
+
+    def visit_IfStatement(self, node):
+        then_branch = self.new_label()
+        else_branch = self.new_label()
+        final_branch = self.new_label()
+        self.visit(node.condition)
+        self.code.append(('CBRANCH', node.condition.register, then_branch, else_branch))
+        self.code.append(('LABEL', then_branch))
+        self.visit(node.then_block)
+        self.code.append(('BRANCH', final_branch))
+        self.code.append(('LABEL', else_branch))
+        self.visit(node.else_block)
+        self.code.append(('BRANCH', final_branch))
+        self.code.append(('LABEL', final_branch))
+
+    def visit_WhileStatement(self, node):
+        cond_branch = self.new_label()
+        loop_branch = self.new_label()
+        final_branch = self.new_label()
+        self.code.append(('BRANCH', cond_branch))
+        self.code.append(('LABEL', cond_branch))
+        self.visit(node.condition)
+        self.code.append(('CBRANCH', node.condition.register, loop_branch, final_branch))
+        self.code.append(('LABEL', loop_branch))
+        self.visit(node.loop_block)
+        self.code.append(('BRANCH', cond_branch))
+        self.code.append(('LABEL', final_branch))
 
     def visit_ConstDeclaration(self, node):
         self.visit(node.value)

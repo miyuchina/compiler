@@ -209,3 +209,75 @@ class TestIRCode(TestCase):
                   ('STOREI', 'R5', 'z')]
         self._test(source, output)
 
+    # project7
+    def test_if_else_statements(self):
+        source = """
+                 var a int;
+                 if 3 < 4 {
+                     a = 1;
+                 } else {
+                     a = 2;
+                 }
+                 """
+        output = [('VARI', 'a'),
+                  ('MOVI', 3, 'R1'),
+                  ('MOVI', 4, 'R2'),
+                  ('CMPI', '<', 'R1', 'R2', 'R3'),
+                  ('CBRANCH', 'R3', 'B1', 'B2'),
+                  ('LABEL', 'B1'),
+                  ('MOVI', 1, 'R4'),
+                  ('STOREI', 'R4', 'a'),
+                  ('BRANCH', 'B3'),
+                  ('LABEL', 'B2'),
+                  ('MOVI', 2, 'R5'),
+                  ('STOREI', 'R5', 'a'),
+                  ('BRANCH', 'B3'),
+                  ('LABEL', 'B3')]
+        self._test(source, output)
+
+    def test_if_statements(self):
+        source = """
+                 var a int;
+                 if 3 < 4 {
+                     a = 1;
+                 }
+                 """
+        output = [('VARI', 'a'),
+                  ('MOVI', 3, 'R1'),
+                  ('MOVI', 4, 'R2'),
+                  ('CMPI', '<', 'R1', 'R2', 'R3'),
+                  ('CBRANCH', 'R3', 'B1', 'B2'),
+                  ('LABEL', 'B1'),
+                  ('MOVI', 1, 'R4'),
+                  ('STOREI', 'R4', 'a'),
+                  ('BRANCH', 'B3'),
+                  ('LABEL', 'B2'),
+                  ('BRANCH', 'B3'),
+                  ('LABEL', 'B3')]
+        self._test(source, output)
+
+    def test_while_statements(self):
+        source = """
+                 var a int = 10;
+                 while a > 0 {
+                     a = a - 1;
+                 }
+                 """
+        output = [('MOVI', 10, 'R1'),
+                  ('VARI', 'a'),
+                  ('STOREI', 'R1', 'a'),
+                  ('BRANCH', 'B1'),
+                  ('LABEL', 'B1'),
+                  ('LOADI', 'a', 'R2'),
+                  ('MOVI', 0, 'R3'),
+                  ('CMPI', '>', 'R2', 'R3', 'R4'),
+                  ('CBRANCH', 'R4', 'B2', 'B3'),
+                  ('LABEL', 'B2'),
+                  ('LOADI', 'a', 'R5'),
+                  ('MOVI', 1, 'R6'),
+                  ('SUBI', 'R5', 'R6', 'R7'),
+                  ('STOREI', 'R7', 'a'),
+                  ('BRANCH', 'B1'),
+                  ('LABEL', 'B3')]
+        self._test(source, output)
+
