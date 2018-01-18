@@ -281,6 +281,14 @@ class TestChecker(TestCase):
                            ('4: TypeError: assigning type error to "a" of type int',)]
         self.assertEqual(expected_output, self.captured_output)
 
+    def test_calling_a_non_function(self):
+        source = ("var add void;\n"
+                  "var a int = add(1, 2);\n")
+        self.check_program(source)
+        expected_output = [('2: TypeError: "add" is not callable.',),
+                           ('2: TypeError: assigning type error to "a" of type int',)]
+        self.assertEqual(expected_output, self.captured_output)
+
     def mock_print(self, *args, **kwargs):
         self.captured_output.append(args)
 

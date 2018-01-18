@@ -127,6 +127,7 @@ class CheckProgramVisitor(NodeVisitor):
         # looked up later
         name = node.name.name
         node.writeable = False
+        node.callable = False
         if name in builtin_types:
             error(node.lineno, f'NameError: cannot declare variable with name {name}')
             return
@@ -140,6 +141,7 @@ class CheckProgramVisitor(NodeVisitor):
     def visit_VarDeclaration(self, node):
         name = node.name.name
         node.writeable = True
+        node.callable = False
         if name in builtin_types:
             error(node.lineno, f'NameError: cannot declare variable with name {name}')
             return
@@ -182,12 +184,12 @@ class CheckProgramVisitor(NodeVisitor):
         self.symbols = self.symbols.parents
 
     def visit_FuncDeclaration(self, node):
+        node.callable = True
         self.symbols[node.name] = node
         self.visit(node.datatype)
         node.type = node.datatype.type
         self.symbols = self.symbols.new_child()
         self.visit(node.arguments)
-
         returned = False
         for statement in node.body:
             self.visit(statement)
@@ -216,6 +218,10 @@ class CheckProgramVisitor(NodeVisitor):
         self.visit(node.arguments)
         try:
             func = self.symbols[node.name.name]
+            if not func.callable:
+                error(node.lineno, f'TypeError: "{node.name.name}" is not callable.')
+                node.type = 'error'
+                return
             if len(func.arguments) != len(node.arguments):
                 error(node.lineno, f'TypeError: {func.name}() takes {len(func.arguments)} argument{"s" if len(func.arguments) > 1 else ""} but {len(node.arguments)} given')
                 node.type = 'error'
