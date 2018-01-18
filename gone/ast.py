@@ -135,7 +135,7 @@ class FuncArgument(AST):
     name     : str
     datatype : DataType
 
-class FuncStatement(Statement):
+class FuncDeclaration(Statement):
     name      : str
     arguments : [ FuncArgument ]
     datatype  : DataType

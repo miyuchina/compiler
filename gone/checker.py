@@ -177,7 +177,7 @@ class CheckProgramVisitor(NodeVisitor):
             return
         self.visit(node.loop_block)
 
-    def visit_FuncStatement(self, node):
+    def visit_FuncDeclaration(self, node):
         self.symbols[node.name] = node
         self.visit(node.datatype)
         node.type = node.datatype.type

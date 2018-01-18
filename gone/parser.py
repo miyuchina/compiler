@@ -228,7 +228,7 @@ class GoneParser(Parser):
     # functions ===============================================================
     @_('FUNC ID LPAREN arguments RPAREN datatype LCBRACE block RCBRACE')
     def func_statement(self, p):
-        return FuncStatement(p.ID, p.arguments, p.datatype, p.block, lineno=p.lineno)
+        return FuncDeclaration(p.ID, p.arguments, p.datatype, p.block, lineno=p.lineno)
 
     @_('RETURN expression SEMI')
     def return_statement(self, p):

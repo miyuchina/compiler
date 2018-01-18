@@ -235,7 +235,7 @@ class TestParser(TestCase):
                }
                """
         token, = self.parse(text)
-        self.assertIsInstance(token, FuncStatement)
+        self.assertIsInstance(token, FuncDeclaration)
         self.assertIsInstance(token.name, str)
         self.assertIsInstance(token.arguments, list)
         self.assertIsInstance(token.arguments[0], FuncArgument)
@@ -252,7 +252,7 @@ class TestParser(TestCase):
                }
                """
         token, = self.parse(text)
-        self.assertIsInstance(token, FuncStatement)
+        self.assertIsInstance(token, FuncDeclaration)
         self.assertEqual(token.body, [])
 
     def test_functions_with_empty_arguments(self):
@@ -261,7 +261,7 @@ class TestParser(TestCase):
                }
                """
         token, = self.parse(text)
-        self.assertIsInstance(token, FuncStatement)
+        self.assertIsInstance(token, FuncDeclaration)
         self.assertEqual(token.arguments, [])
 
     def test_empty_return(self):
@@ -271,7 +271,7 @@ class TestParser(TestCase):
                }
                """
         token, = self.parse(text)
-        self.assertIsInstance(token, FuncStatement)
+        self.assertIsInstance(token, FuncDeclaration)
         self.assertIsInstance(token.body[-1], ReturnStatement)
         self.assertEqual(token.body[-1].value, None)
 
