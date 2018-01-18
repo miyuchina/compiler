@@ -144,6 +144,13 @@ class FuncDeclaration(Statement):
 class ReturnStatement(Statement):
     value : (Expression, type(None))
 
+class CallArgument(AST):
+    value : Expression
+
+class FunctionCall(Expression):
+    name      : Location
+    arguments : [ Expression ]
+
 class Literal(Expression):
     '''
     A literal value such as 2, 2.5, or "two"

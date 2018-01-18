@@ -275,6 +275,19 @@ class TestParser(TestCase):
         self.assertIsInstance(token.body[-1], ReturnStatement)
         self.assertEqual(token.body[-1].value, None)
 
+    def test_function_call(self):
+        text = """
+               a = add(1, 2);
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, Assignment)
+        self.assertIsInstance(token.value, FunctionCall)
+        self.assertIsInstance(token.value.name, Location)
+        self.assertEqual(token.value.name.name, 'add')
+        self.assertIsInstance(token.value.arguments, list)
+        self.assertEqual(token.value.arguments[0].value, 1)
+        self.assertEqual(token.value.arguments[1].value, 2)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:

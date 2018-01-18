@@ -205,6 +205,10 @@ class GoneParser(Parser):
     def expression(self, p):
         return UnaryOp(p.NOT, p.expression, lineno=p.lineno)
 
+    @_('function_call')
+    def expression(self, p):
+        return p.function_call
+
     @_('location')
     def expression(self, p):
         return ReadLocation(p.location, lineno=p.location.lineno)
@@ -254,6 +258,23 @@ class GoneParser(Parser):
     @_('ID datatype')
     def argument(self, p):
         return FuncArgument(p.ID, p.datatype, lineno=p.lineno)
+
+    @_('location LPAREN call_arguments RPAREN')
+    def function_call(self, p):
+        return FunctionCall(p.location, p.call_arguments, lineno=p.lineno)
+
+    @_('call_arguments COMMA expression')
+    def call_arguments(self, p):
+        p.call_arguments.append(p.expression)
+        return p.call_arguments
+
+    @_('expression')
+    def call_arguments(self, p):
+        return [p.expression]
+
+    @_('empty')
+    def call_arguments(self, p):
+        return []
     # =========================================================================
 
     @_('ID')
