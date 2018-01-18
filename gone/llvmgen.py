@@ -88,6 +88,9 @@ class GenerateLLVM(object):
         # the intermediate code.
         self.temps = {}
 
+        # blocks
+        self.blocks = {}
+
         # Initialize the runtime library functions (see below)
         self.declare_runtime_library()
 
@@ -119,6 +122,10 @@ class GenerateLLVM(object):
         # instructions using the current builder (self.builder).  Each
         # opcode tuple (opcode, args) is dispatched to a method of the
         # form self.emit_opcode(args)
+        for instr in ircode:
+            if instr[0] == 'LABEL':
+                self.blocks[instr[1]] = self.function.append_basic_block(instr[1])
+
         for opcode, *args in ircode:
 
             if hasattr(self, 'emit_'+opcode):
@@ -213,9 +220,6 @@ class GenerateLLVM(object):
 
     def emit_CMPI(self, op, left, right, target):
         tmp = self.builder.icmp_signed(op, self.temps[left], self.temps[right], 'tmp')
-        # LLVM compares produce a 1-bit integer as a result.  Since our IRcode using integers
-        # for bools, need to sign-extend the result up to the normal int_type to continue
-        # with further processing (otherwise you'll get a LLVM type error).
         self.temps[target] = self.builder.zext(tmp, int_type, target)
 
     def emit_CMPF(self, op, left, right, target):
@@ -232,6 +236,17 @@ class GenerateLLVM(object):
 
     def emit_OR(self, left, right, target):
         self.temps[target] = self.builder.or_(self.temps[left], self.temps[right], target)
+
+    # control flow
+    def emit_LABEL(self, label):
+        self.builder.position_at_end(self.blocks[label])
+
+    def emit_BRANCH(self, label):
+        self.builder.branch(self.blocks[label])
+
+    def emit_CBRANCH(self, test, label1, label2):
+        tmp = self.builder.trunc(self.temps[test], IntType(1), 'tmp')
+        self.builder.cbranch(tmp, self.blocks[label1], self.blocks[label2])
 
     # Print statements
     def emit_PRINTI(self, source):
