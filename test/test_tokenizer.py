@@ -115,6 +115,19 @@ class TestTokenizer(TestCase):
         for token, expected in zip(self.lexer.tokenize(text), tokens):
             self.assertEqual(token.type, expected)
 
+    # project8
+    def test_func_and_return(self):
+        text = 'func return'
+        tokens = text.upper().split()
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
+    def test_comma(self):
+        text = ','
+        tokens = ['COMMA']
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:

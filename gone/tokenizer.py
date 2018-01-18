@@ -105,7 +105,7 @@ class GoneLexer(Lexer):
 
     tokens = {
         # keywords
-        'PRINT', 'CONST', 'VAR', 'IF', 'ELSE', 'WHILE',
+        'PRINT', 'CONST', 'VAR', 'IF', 'ELSE', 'WHILE', 'FUNC', 'RETURN',
                  
         # Identifiers
         'ID',
@@ -119,7 +119,7 @@ class GoneLexer(Lexer):
         'LT', 'GT', 'LE', 'GE', 'EQ', 'NE', 'AND', 'OR', 'NOT',
 
         # Other symbols
-        'LPAREN', 'RPAREN', 'LCBRACE', 'RCBRACE', 'SEMI'
+        'LPAREN', 'RPAREN', 'LCBRACE', 'RCBRACE', 'SEMI', 'COMMA',
     }
 
     # ----------------------------------------------------------------------
@@ -197,6 +197,7 @@ class GoneLexer(Lexer):
     LCBRACE = r'\{'
     RCBRACE = r'\}'
     SEMI    = r';'
+    COMMA   = ','
 
     # ----------------------------------------------------------------------
     # *** YOU MUST COMPLETE : write the regexs and additional code below ***
@@ -269,7 +270,8 @@ class GoneLexer(Lexer):
 
     @_(r'\b[a-zA-Z_][a-zA-Z_0-9]*\b')
     def ID(self, token):
-        keywords = {'const', 'var', 'print', 'true', 'false', 'if', 'else', 'while'}
+        keywords = {'const', 'var', 'print', 'true', 'false',
+                    'if', 'else', 'while', 'func', 'return'}
         if token.value in keywords:
             token.type = token.value.upper()
         return token
