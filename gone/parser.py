@@ -126,9 +126,9 @@ class GoneParser(Parser):
     #
     # Afterwards, add features by looking at the code in Tests/parsetest1-6.g
 
-    @_('statements')
+    @_('statements', 'empty')
     def block(self, p):
-        return p.statements
+        return p[0]
 
     @_('statements statement')
     def statements(self, p):
@@ -242,6 +242,10 @@ class GoneParser(Parser):
     @_('TRUE', 'FALSE')
     def literal(self, p):
         return BoolLiteral(eval(p[0].title()), lineno=p.lineno)
+
+    @_('')
+    def empty(self, p):
+        return []
 
     # ----------------------------------------------------------------------
     # DO NOT MODIFY

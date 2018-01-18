@@ -217,6 +217,16 @@ class TestParser(TestCase):
         self.assertIsInstance(token.condition, BinOp)
         self.assertIsInstance(token.loop_block, list)
 
+    def test_empty_if_statements(self):
+        text = """
+               if 1 < 2 {
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, IfStatement)
+        self.assertEqual(token.then_block, [])
+        self.assertEqual(token.else_block, [])
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:
