@@ -126,6 +126,10 @@ class GoneParser(Parser):
     #
     # Afterwards, add features by looking at the code in Tests/parsetest1-6.g
 
+    @_('statements')
+    def block(self, p):
+        return p.statements
+
     @_('statements statement')
     def statements(self, p):
         p.statements.append(p.statement)
@@ -138,6 +142,8 @@ class GoneParser(Parser):
     @_('assignment_statement',
        'const_statement',
        'var_statement',
+       'if_statement',
+       'while_statement',
        'print_statement')
     def statement(self, p):
         return p[0]
@@ -201,13 +207,25 @@ class GoneParser(Parser):
     def expression(self, p):
         return ReadLocation(p.location, lineno=p.location.lineno)
 
-    @_('ID')
-    def location(self, p):
-        return SimpleLocation(p.ID, lineno=p.lineno)
-
     @_('literal')
     def expression(self, p):
         return p.literal
+
+    @_('IF expression LCBRACE block RCBRACE ELSE LCBRACE block RCBRACE')
+    def if_statement(self, p):
+        return IfStatement(p.expression, p.block0, p.block1, lineno=p.lineno)
+
+    @_('IF expression LCBRACE block RCBRACE')
+    def if_statement(self, p):
+        return IfStatement(p.expression, p.block, [], lineno=p.lineno)
+
+    @_('WHILE expression LCBRACE block RCBRACE')
+    def while_statement(self, p):
+        return WhileStatement(p.expression, p.block, lineno=p.lineno)
+
+    @_('ID')
+    def location(self, p):
+        return SimpleLocation(p.ID, lineno=p.lineno)
 
     @_('INTEGER')
     def literal(self, p):

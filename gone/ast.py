@@ -75,6 +75,7 @@ class AST(object):
 # ----------------------------------------------------------------------
 
 # Abstract AST nodes
+
 class Statement(AST):
     pass
 
@@ -120,6 +121,15 @@ class BinOp(Expression):
 class UnaryOp(Expression):
     op    : str
     value : Expression
+
+class IfStatement(Statement):
+    condition  : Expression
+    then_block : [ Statement ]
+    else_block : [ Statement ]
+
+class WhileStatement(Statement):
+    condition  : Expression
+    loop_block : [ Statement ]
 
 class Literal(Expression):
     '''

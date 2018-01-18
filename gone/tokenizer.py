@@ -105,7 +105,7 @@ class GoneLexer(Lexer):
 
     tokens = {
         # keywords
-        'PRINT', 'CONST', 'VAR',
+        'PRINT', 'CONST', 'VAR', 'IF', 'ELSE', 'WHILE',
                  
         # Identifiers
         'ID',
@@ -119,7 +119,7 @@ class GoneLexer(Lexer):
         'LT', 'GT', 'LE', 'GE', 'EQ', 'NE', 'AND', 'OR', 'NOT',
 
         # Other symbols
-        'LPAREN', 'RPAREN', 'SEMI'
+        'LPAREN', 'RPAREN', 'LCBRACE', 'RCBRACE', 'SEMI'
     }
 
     # ----------------------------------------------------------------------
@@ -187,14 +187,16 @@ class GoneLexer(Lexer):
     OR     = r'\|\|'
     NOT    = r'\!'
 
-    PLUS   = r'\+'      # Regex for a single plus sign
-    MINUS  = r'-'       # Regex for a single minus sign
-    TIMES  = r'\*'
-    DIVIDE = r'/'
-    ASSIGN = r'='
-    LPAREN = r'\('
-    RPAREN = r'\)'
-    SEMI   = r';'
+    PLUS    = r'\+'      # Regex for a single plus sign
+    MINUS   = r'-'       # Regex for a single minus sign
+    TIMES   = r'\*'
+    DIVIDE  = r'/'
+    ASSIGN  = r'='
+    LPAREN  = r'\('
+    RPAREN  = r'\)'
+    LCBRACE = r'\{'
+    RCBRACE = r'\}'
+    SEMI    = r';'
 
     # ----------------------------------------------------------------------
     # *** YOU MUST COMPLETE : write the regexs and additional code below ***
@@ -267,7 +269,7 @@ class GoneLexer(Lexer):
 
     @_(r'\b[a-zA-Z_][a-zA-Z_0-9]*\b')
     def ID(self, token):
-        keywords = {'const', 'var', 'print', 'true', 'false'}
+        keywords = {'const', 'var', 'print', 'true', 'false', 'if', 'else', 'while'}
         if token.value in keywords:
             token.type = token.value.upper()
         return token

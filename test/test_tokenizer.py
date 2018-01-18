@@ -102,6 +102,19 @@ class TestTokenizer(TestCase):
             self.assertEqual(token.type, expected[0])
             self.assertEqual(token.value, expected[1])
 
+    # project7
+    def test_control_flow_keywords(self):
+        text = "if else while"
+        tokens = text.upper().split()
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
+    def test_curly_braces(self):
+        text = "{ }"
+        tokens = ['LCBRACE', 'RCBRACE']
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:

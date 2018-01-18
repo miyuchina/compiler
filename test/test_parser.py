@@ -182,6 +182,41 @@ class TestParser(TestCase):
         self.assertIsInstance(token2.name, SimpleLocation)
         self.assertIsInstance(token2.value, BinOp)
 
+    def test_if_else_statement(self):
+        text = """
+               if 1 < 2 {
+                   a = 1;
+               } else {
+                   a = 2;
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, IfStatement)
+        self.assertIsInstance(token.condition, BinOp)
+        self.assertIsInstance(token.then_block, list)
+        self.assertIsInstance(token.else_block, list)
+
+    def test_if_statement(self):
+        text = """
+               if 1 < 2 {
+                   a = 1;
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, IfStatement)
+        self.assertEqual(token.else_block, [])
+
+    def test_while_statement(self):
+        text = """
+               while a > 0 {
+                   a = a - 1;
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, WhileStatement)
+        self.assertIsInstance(token.condition, BinOp)
+        self.assertIsInstance(token.loop_block, list)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:
