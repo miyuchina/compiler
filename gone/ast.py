@@ -131,6 +131,19 @@ class WhileStatement(Statement):
     condition  : Expression
     loop_block : [ Statement ]
 
+class FuncArgument(AST):
+    name     : str
+    datatype : DataType
+
+class FuncStatement(Statement):
+    name      : str
+    arguments : [ FuncArgument ]
+    datatype  : DataType
+    body      : [ Statement ]
+
+class ReturnStatement(Statement):
+    value : (Expression, type(None))
+
 class Literal(Expression):
     '''
     A literal value such as 2, 2.5, or "two"

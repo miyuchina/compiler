@@ -144,6 +144,8 @@ class GoneParser(Parser):
        'var_statement',
        'if_statement',
        'while_statement',
+       'func_statement',
+       'return_statement',
        'print_statement')
     def statement(self, p):
         return p[0]
@@ -222,6 +224,37 @@ class GoneParser(Parser):
     @_('WHILE expression LCBRACE block RCBRACE')
     def while_statement(self, p):
         return WhileStatement(p.expression, p.block, lineno=p.lineno)
+
+    # functions ===============================================================
+    @_('FUNC ID LPAREN arguments RPAREN datatype LCBRACE block RCBRACE')
+    def func_statement(self, p):
+        return FuncStatement(p.ID, p.arguments, p.datatype, p.block, lineno=p.lineno)
+
+    @_('RETURN expression SEMI')
+    def return_statement(self, p):
+        return ReturnStatement(p.expression, lineno=p.lineno)
+
+    @_('RETURN SEMI')
+    def return_statement(self, p):
+        return ReturnStatement(None, lineno=p.lineno)
+
+    @_('arguments COMMA argument')
+    def arguments(self, p):
+        p.arguments.append(p.argument)
+        return p.arguments
+
+    @_('argument')
+    def arguments(self, p):
+        return [p.argument]
+
+    @_('empty')
+    def arguments(self, p):
+        return []
+
+    @_('ID datatype')
+    def argument(self, p):
+        return FuncArgument(p.ID, p.datatype, lineno=p.lineno)
+    # =========================================================================
 
     @_('ID')
     def location(self, p):

@@ -227,6 +227,54 @@ class TestParser(TestCase):
         self.assertEqual(token.then_block, [])
         self.assertEqual(token.else_block, [])
 
+    # project8
+    def test_function_statements(self):
+        text = """
+               func add(x int, y int) int {
+                   return x + y;
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, FuncStatement)
+        self.assertIsInstance(token.name, str)
+        self.assertIsInstance(token.arguments, list)
+        self.assertIsInstance(token.arguments[0], FuncArgument)
+        self.assertIsInstance(token.arguments[0].name, str)
+        self.assertIsInstance(token.arguments[0].datatype, SimpleType)
+        self.assertIsInstance(token.datatype, SimpleType)
+        self.assertIsInstance(token.body, list)
+        self.assertIsInstance(token.body[-1], ReturnStatement)
+        self.assertIsInstance(token.body[-1].value, BinOp)
+
+    def test_empty_functions(self):
+        text = """
+               func foo(x int) int {
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, FuncStatement)
+        self.assertEqual(token.body, [])
+
+    def test_functions_with_empty_arguments(self):
+        text = """
+               func main() void {
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, FuncStatement)
+        self.assertEqual(token.arguments, [])
+
+    def test_empty_return(self):
+        text = """
+               func main() void {
+                   return;
+               }
+               """
+        token, = self.parse(text)
+        self.assertIsInstance(token, FuncStatement)
+        self.assertIsInstance(token.body[-1], ReturnStatement)
+        self.assertEqual(token.body[-1].value, None)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:
