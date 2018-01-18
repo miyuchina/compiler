@@ -165,6 +165,7 @@ class CheckProgramVisitor(NodeVisitor):
         self.visit(node.condition)
         if node.condition.type != 'bool':
             error(node.lineno, 'TypeError: if-statement condition is not a boolean')
+            return
         self.visit(node.then_block)
         self.visit(node.else_block)
 
@@ -172,6 +173,7 @@ class CheckProgramVisitor(NodeVisitor):
         self.visit(node.condition)
         if node.condition.type != 'bool':
             error(node.lineno, 'TypeError: while-statement condition is not a boolean')
+            return
         self.visit(node.loop_block)
 
     def visit_PrintStatement(self, node):
