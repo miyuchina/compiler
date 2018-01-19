@@ -139,34 +139,35 @@ class GoneParser(Parser):
     def statements(self, p):
         return [p.statement]
 
-    @_('assignment_statement',
-       'const_statement',
-       'var_statement',
+    @_('assignment_statement SEMI',
+       'const_statement SEMI',
+       'var_statement SEMI',
        'if_statement',
        'while_statement',
+       'for_statement',
        'func_statement',
        'return_statement',
-       'print_statement')
+       'print_statement SEMI')
     def statement(self, p):
         return p[0]
 
-    @_('location ASSIGN expression SEMI')
+    @_('location ASSIGN expression')
     def assignment_statement(self, p):
         return Assignment(p.location, p.expression, lineno=p.lineno)
 
-    @_('CONST location ASSIGN expression SEMI')
+    @_('CONST location ASSIGN expression')
     def const_statement(self, p):
         return ConstDeclaration(p.location, p.expression, lineno=p.lineno)
 
-    @_('VAR location datatype ASSIGN expression SEMI')
+    @_('VAR location datatype ASSIGN expression')
     def var_statement(self, p):
         return VarDeclaration(p.location, p.datatype, p.expression, lineno=p.lineno)
 
-    @_('VAR location datatype SEMI')
+    @_('VAR location datatype')
     def var_statement(self, p):
         return VarDeclaration(p.location, p.datatype, None, lineno=p.lineno)
 
-    @_('PRINT expression SEMI')
+    @_('PRINT expression')
     def print_statement(self, p):
         return PrintStatement(p.expression, lineno=p.lineno)
 
@@ -228,6 +229,14 @@ class GoneParser(Parser):
     @_('WHILE expression LCBRACE block RCBRACE')
     def while_statement(self, p):
         return WhileStatement(p.expression, p.block, lineno=p.lineno)
+
+    @_('FOR LPAREN statement expression SEMI statement RPAREN LCBRACE block RCBRACE')
+    def for_statement(self, p):
+        return ForStatement(p.statement0, p.expression, p.statement1, p.block, lineno=p.lineno)
+
+    @_('FOR statement expression SEMI statement LCBRACE block RCBRACE')
+    def for_statement(self, p):
+        return ForStatement(p.statement0, p.expression, p.statement1, p.block, lineno=p.lineno)
 
     # functions ===============================================================
     @_('FUNC ID LPAREN arguments RPAREN datatype LCBRACE block RCBRACE')

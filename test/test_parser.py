@@ -288,6 +288,28 @@ class TestParser(TestCase):
         self.assertEqual(token.value.arguments[0].value, 1)
         self.assertEqual(token.value.arguments[1].value, 2)
 
+    def test_for_loop(self):
+        text = """
+               for var i int = 0; i < 10; i = i + 1; {
+                   print i;
+               }
+
+               for i = 0; i < 10; i = i + 1; {
+                   print i;
+               }
+               """
+        token1, token2 = self.parse(text)
+        self.assertIsInstance(token1, ForStatement)
+        self.assertIsInstance(token1.init, VarDeclaration)
+        self.assertIsInstance(token1.cond, BinOp)
+        self.assertIsInstance(token1.step, Assignment)
+        self.assertIsInstance(token1.body, list)
+        self.assertIsInstance(token2, ForStatement)
+        self.assertIsInstance(token2.init, Assignment)
+        self.assertIsInstance(token2.cond, BinOp)
+        self.assertIsInstance(token2.step, Assignment)
+        self.assertIsInstance(token2.body, list)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:

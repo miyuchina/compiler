@@ -131,6 +131,12 @@ class WhileStatement(Statement):
     condition  : Expression
     loop_block : [ Statement ]
 
+class ForStatement(Statement):
+    init : Statement
+    cond : Expression
+    step : Statement
+    body : [ Statement ]
+
 class FuncArgument(AST):
     name     : str
     datatype : DataType
