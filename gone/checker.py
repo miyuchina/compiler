@@ -110,6 +110,22 @@ from .ast import *
 from .typesys import check_binop, check_unaryop, builtin_types
 from collections import ChainMap
 
+class SymbolMap(ChainMap):
+    def __init__(self, *maps):
+        assert all(isinstance(m, ScopeDict) for m in maps)
+        self.maps = list(maps) or [ScopeDict('global')]
+
+    def new_child(self):
+        return super().new_child(ScopeDict('local'))
+
+class ScopeDict(dict):
+    def __init__(self, scope='local'):
+        self.scope = scope
+
+    def __setitem__(self, key, value):
+        value.scope = self.scope
+        super().__setitem__(key, value)
+
 class CheckProgramVisitor(NodeVisitor):
     '''
     Program checking class.   This class uses the visitor pattern as described
@@ -119,7 +135,7 @@ class CheckProgramVisitor(NodeVisitor):
     '''
     def __init__(self):
         # Initialize the symbol table
-        self.symbols = ChainMap({}, {})
+        self.symbols = SymbolMap()
 
     def visit_ConstDeclaration(self, node):
         # For a declaration, you'll need to check that it isn't already defined.
@@ -205,6 +221,7 @@ class CheckProgramVisitor(NodeVisitor):
                 node.type = 'error'
             else:
                 node.type = 'void'
+        node.symbols = self.symbols
         self.symbols = self.symbols.parents
 
     def visit_FuncArgument(self, node):

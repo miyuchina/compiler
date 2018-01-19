@@ -289,6 +289,19 @@ class TestChecker(TestCase):
                            ('2: TypeError: assigning type error to "a" of type int',)]
         self.assertEqual(expected_output, self.captured_output)
 
+    def test_global_and_local_attributes(self):
+        from gone.parser import parse
+        from gone.checker import CheckProgramVisitor
+        source = ("var x int;\n"
+                  "func foo (y int) int {\n"
+                  "    return y;\n"
+                  "}\n")
+        ast = parse(source)
+        visitor = CheckProgramVisitor()
+        visitor.visit(ast)
+        self.assertEqual(visitor.symbols['x'].scope, 'global')
+        self.assertEqual(visitor.symbols['foo'].symbols['y'].scope, 'local')
+
     def mock_print(self, *args, **kwargs):
         self.captured_output.append(args)
 
