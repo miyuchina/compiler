@@ -1,12 +1,33 @@
 from unittest import TestCase
-from gone.ircode import compile_ircode
-from gone.errors import clear_errors
+from gone.ircode import GenerateCode
+from gone.parser import parse
+from gone.checker import check_program
+from gone.errors import clear_errors, errors_reported
 
 class TestIRCode(TestCase):
-    def _test(self, source, output):
+    def _test_code(self, source, output):
         clear_errors()
-        code = compile_ircode(source)
+        ast = parse(source)
+        check_program(ast)
+        code = []
+        if not errors_reported():
+            visitor = GenerateCode()
+            visitor.visit(ast)
+            code = visitor.code
         self.assertEqual(code, output)
+
+    def _test_functions(self, source, output):
+        clear_errors()
+        ast = parse(source)
+        check_program(ast)
+        functions = []
+        if not errors_reported():
+            visitor = GenerateCode()
+            visitor.visit(ast)
+            functions_list = visitor.functions
+        for function in functions_list:
+            functions.append((function.name, function.body))
+        self.assertEqual(functions, output)
 
     # irtest0
     def test_simple_literals(self):
@@ -21,7 +42,7 @@ class TestIRCode(TestCase):
                   ('PRINTF', 'R2'),
                   ('MOVB', 97, 'R3'),
                   ('PRINTB', 'R3')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     # irtest1
     def test_binary_operations(self):
@@ -49,7 +70,7 @@ class TestIRCode(TestCase):
                   ('MOVF', 7.0, 'R17'),
                   ('DIVF', 'R16', 'R17', 'R18'),
                   ('PRINTF', 'R18')] 
-        self._test(source, output)
+        self._test_code(source, output)
 
     # irtest2
     def test_unary_operations(self):
@@ -79,7 +100,7 @@ class TestIRCode(TestCase):
                   ('MOVF', 8.0, 'R15'),
                   ('ADDF', 'R14', 'R15', 'R16'),
                   ('PRINTF', 'R16')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     # irtest3
     def test_constant_declaration(self):
@@ -107,7 +128,7 @@ class TestIRCode(TestCase):
                   ('PRINTF', 'R5'),
                   ('LOADB', 'a', 'R6'),
                   ('PRINTB', 'R6')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     # irtest4
     def test_variable_declarations_and_assignment(self):
@@ -146,7 +167,7 @@ class TestIRCode(TestCase):
                   ('VARB', 'b'),
                   ('LOADB', 'a', 'R10'),
                   ('STOREB', 'R10', 'b')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     # project6
     def test_boolean_literals(self):
@@ -158,7 +179,7 @@ class TestIRCode(TestCase):
                   ('PRINTI', 'R1'),
                   ('MOVI', 0, 'R2'),
                   ('PRINTI', 'R2')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     def test_boolean_binary_operations(self):
         source = """
@@ -177,7 +198,7 @@ class TestIRCode(TestCase):
                   ('CMPI', '>=', 'R7', 'R8', 'R9'),
                   ('OR', 'R6', 'R9', 'R10'),
                   ('PRINTI', 'R10')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     def test_boolean_unary_operations(self):
         source = """
@@ -187,7 +208,7 @@ class TestIRCode(TestCase):
                   ('MOVI', 1, 'R2'),
                   ('SUBI', 'R2', 'R1', 'R3'),
                   ('PRINTI', 'R3')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     def test_boolean_variables_and_constants(self):
         source = """
@@ -207,7 +228,7 @@ class TestIRCode(TestCase):
                   ('LOADI', 'y', 'R4'),
                   ('OR', 'R3', 'R4', 'R5'),
                   ('STOREI', 'R5', 'z')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     # project7
     def test_if_else_statements(self):
@@ -233,7 +254,7 @@ class TestIRCode(TestCase):
                   ('STOREI', 'R5', 'a'),
                   ('BRANCH', 'B3'),
                   ('LABEL', 'B3')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     def test_if_statements(self):
         source = """
@@ -254,7 +275,7 @@ class TestIRCode(TestCase):
                   ('LABEL', 'B2'),
                   ('BRANCH', 'B3'),
                   ('LABEL', 'B3')]
-        self._test(source, output)
+        self._test_code(source, output)
 
     def test_while_statements(self):
         source = """
@@ -279,5 +300,63 @@ class TestIRCode(TestCase):
                   ('STOREI', 'R7', 'a'),
                   ('BRANCH', 'B1'),
                   ('LABEL', 'B3')]
-        self._test(source, output)
+        self._test_code(source, output)
+
+    def test_function_declaration(self):
+        source = """
+                 func add(x int, y int) int {
+                     return x + y;
+                 }
+                 """
+        output = [('_init', []),
+                  ('add', [('ALLOCI', 'x'),
+                           ('STOREI', 'R1', 'x'),
+                           ('ALLOCI', 'y'),
+                           ('STOREI', 'R2', 'y'),
+                           ('LOADI', 'x', 'R3'),
+                           ('LOADI', 'y', 'R4'),
+                           ('ADDI', 'R3', 'R4', 'R5'),
+                           ('RET', 'R5')])]
+        self._test_functions(source, output)
+
+    def test_define_global_and_local_variables(self):
+        source = """
+                 func foo(x int) int {
+                     var y int;
+                     return x + y;
+                 }
+                 const x = 5;
+                 """
+        output = [('_init', [('MOVI', 5, 'R5'),
+                             ('VARI', 'x'),
+                             ('STOREI', 'R5', 'x')]),
+                  ('foo', [('ALLOCI', 'x'),
+                           ('STOREI', 'R1', 'x'),
+                           ('ALLOCI', 'y'),
+                           ('LOADI', 'x', 'R2'),
+                           ('LOADI', 'y', 'R3'),
+                           ('ADDI', 'R2', 'R3', 'R4'),
+                           ('RET', 'R4')])]
+        self._test_functions(source, output)
+
+    def test_function_call(self):
+        self.maxDiff = None
+        source = """
+                 func add(x int, y int) int { return x + y; }
+                 var x int = add(1, 2);
+                 """
+        output = [('_init', [('MOVI', 1, 'R6'),
+                             ('MOVI', 2, 'R7'),
+                             ('CALL', 'add', 'R6', 'R7', 'R8'),
+                             ('VARI', 'x'),
+                             ('STOREI', 'R8', 'x')]),
+                  ('add', [('ALLOCI', 'x'),
+                           ('STOREI', 'R1', 'x'),
+                           ('ALLOCI', 'y'),
+                           ('STOREI', 'R2', 'y'),
+                           ('LOADI', 'x', 'R3'),
+                           ('LOADI', 'y', 'R4'),
+                           ('ADDI', 'R3', 'R4', 'R5'),
+                           ('RET', 'R5')])]
+        self._test_functions(source, output)
 

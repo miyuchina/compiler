@@ -121,6 +121,23 @@ sample output. Work through each file to complete the project.
 
 from . import ast
 
+class Function:
+    def __init__(self, name, return_type='void', param_names=None, param_types=None):
+        self.name = name
+        self.return_type = name
+        self.param_names = param_names or []
+        self.param_types = param_types or []
+        self.body = []
+
+    def __iter__(self):
+        return iter(self.body)
+
+    def __eq__(self, other):
+        return self.body == other
+
+    def append(self, inst):
+        self.body.append(inst)
+
 class GenerateCode(ast.NodeVisitor):
     '''
     Node visitor class that creates 3-address encoded instruction sequences.
@@ -128,8 +145,8 @@ class GenerateCode(ast.NodeVisitor):
     def __init__(self):
         self.register_count = 0
         self.label_count = 0
-
-        self.code = []
+        self.code = Function('_init')
+        self.functions = [self.code]
 
     def new_register(self):
          '''
@@ -226,6 +243,33 @@ class GenerateCode(ast.NodeVisitor):
         self.code.append(('BRANCH', cond_branch))
         self.code.append(('LABEL', exit_branch))
 
+    def visit_FuncDeclaration(self, node):
+        module_code = self.code
+        param_names = [arg.name for arg in node.arguments]
+        param_types = [arg.type for arg in node.arguments]
+        self.code = Function(node.name, node.datatype, param_names, param_types)
+        self.visit(node.arguments)
+        self.visit(node.body)
+        self.functions.append(self.code)
+        self.code = module_code
+
+    def visit_FuncArgument(self, node):
+        target = self.new_register()
+        self.code.append(('ALLOC' + _type_char(node.type), node.name))
+        self.code.append(('STORE' + _type_char(node.type), target, node.name))
+        node.register = target
+
+    def visit_FunctionCall(self, node):
+        self.visit(node.arguments)
+        target = self.new_register()
+        registers = [arg.register for arg in node.arguments]
+        self.code.append(('CALL', node.name.name, *registers, target))
+        node.register = target
+
+    def visit_ReturnStatement(self, node):
+        self.visit(node.value)
+        self.code.append(('RET', node.value.register))
+
     def visit_ConstDeclaration(self, node):
         self.visit(node.value)
         self._declare(node)
@@ -261,7 +305,8 @@ class GenerateCode(ast.NodeVisitor):
         node.register = target
 
     def _declare(self, node):
-        self.code.append(('VAR' + _type_char(node.type), node.name.name))
+        code = 'ALLOC' if node.scope == 'local' else 'VAR'
+        self.code.append((code + _type_char(node.type), node.name.name))
 
     def _store(self, node):
         code = 'STORE' + _type_char(node.value.type)
@@ -310,7 +355,7 @@ def compile_ircode(source):
     if not errors_reported():
         gen = GenerateCode()
         gen.visit(ast)
-        return gen.code    
+        return gen.functions
     else:
         return []
 
