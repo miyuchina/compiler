@@ -153,6 +153,15 @@ class GoneParser(Parser):
     def statement(self, p):
         return p[0]
 
+    @_('location AUG_PLUS expression',
+       'location AUG_MINUS expression',
+       'location AUG_TIMES expression',
+       'location AUG_DIVIDE expression')
+    def assignment_statement(self, p):
+        return Assignment(p.location,
+                          BinOp(p[1][0], ReadLocation(p.location, lineno=p.lineno), p.expression),
+                          lineno=p.lineno)
+
     @_('location ASSIGN expression')
     def assignment_statement(self, p):
         return Assignment(p.location, p.expression, lineno=p.lineno)

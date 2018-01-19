@@ -118,6 +118,7 @@ class GoneLexer(Lexer):
         # Operators 
         'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'ASSIGN',
         'LT', 'GT', 'LE', 'GE', 'EQ', 'NE', 'AND', 'OR', 'NOT',
+        'AUG_PLUS', 'AUG_MINUS', 'AUG_TIMES', 'AUG_DIVIDE',
 
         # Other symbols
         'LPAREN', 'RPAREN', 'LCBRACE', 'RCBRACE', 'SEMI', 'COMMA',
@@ -187,6 +188,11 @@ class GoneLexer(Lexer):
     AND    = r'&&'
     OR     = r'\|\|'
     NOT    = r'\!'
+
+    AUG_PLUS   = r'\+='
+    AUG_MINUS  = r'-='
+    AUG_TIMES  = r'\*='
+    AUG_DIVIDE = r'/='
 
     PLUS    = r'\+'      # Regex for a single plus sign
     MINUS   = r'-'       # Regex for a single minus sign
