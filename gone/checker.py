@@ -205,9 +205,9 @@ class CheckProgramVisitor(NodeVisitor):
         self.visit(node.arguments)
         self._function = Function(node.type)
         self.visit(node.body)
-        if not self._function.returned:
-            if node.type != 'void':
-                error(node.lineno, 'TypeError: missing return statement')
+        # if not self._function.returned:
+        #     if node.type != 'void':
+        #         error(node.lineno, 'TypeError: missing return statement')
         self._function = None
         node.symbols = self.symbols
         self.symbols = self.symbols.parents
