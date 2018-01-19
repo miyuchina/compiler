@@ -225,6 +225,7 @@ class CheckProgramVisitor(NodeVisitor):
         self.symbols = self.symbols.parents
 
     def visit_FuncArgument(self, node):
+        node.writeable = True
         self.symbols[node.name] = node
         self.visit(node.datatype)
         node.type = node.datatype.type
