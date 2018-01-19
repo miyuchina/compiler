@@ -158,9 +158,15 @@ class GoneParser(Parser):
        'location AUG_TIMES expression',
        'location AUG_DIVIDE expression')
     def assignment_statement(self, p):
-        return Assignment(p.location,
-                          BinOp(p[1][0], ReadLocation(p.location, lineno=p.lineno), p.expression),
-                          lineno=p.lineno)
+        expr = BinOp(p[1][0], ReadLocation(p.location, lineno=p.lineno), p.expression)
+        return Assignment(p.location, expr, lineno=p.lineno)
+
+    @_('location INCR',
+       'location DECR',)
+    def assignment_statement(self, p):
+        expr = BinOp(p[1][0], ReadLocation(p.location, lineno=p.lineno), IntegerLiteral(1, lineno=p.lineno))
+        return Assignment(p.location, expr, lineno=p.lineno)
+
 
     @_('location ASSIGN expression')
     def assignment_statement(self, p):
