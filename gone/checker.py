@@ -110,22 +110,6 @@ from .ast import *
 from .typesys import check_binop, check_unaryop, builtin_types
 from collections import ChainMap
 
-class SymbolMap(ChainMap):
-    def __init__(self, *maps):
-        assert all(isinstance(m, ScopeDict) for m in maps)
-        self.maps = list(maps) or [ScopeDict('global')]
-
-    def new_child(self):
-        return super().new_child(ScopeDict('local'))
-
-class ScopeDict(dict):
-    def __init__(self, scope='local'):
-        self.scope = scope
-
-    def __setitem__(self, key, value):
-        value.scope = self.scope
-        super().__setitem__(key, value)
-
 class CheckProgramVisitor(NodeVisitor):
     '''
     Program checking class.   This class uses the visitor pattern as described
@@ -136,6 +120,7 @@ class CheckProgramVisitor(NodeVisitor):
     def __init__(self):
         # Initialize the symbol table
         self.symbols = SymbolMap()
+        self._function = None
 
     def visit_ConstDeclaration(self, node):
         # For a declaration, you'll need to check that it isn't already defined.
@@ -186,7 +171,11 @@ class CheckProgramVisitor(NodeVisitor):
         if node.condition.type != 'bool':
             error(node.lineno, 'TypeError: if-statement condition is not a boolean')
             return
+        if self._function is not None:
+            self._function.branch()
         self.visit(node.then_block)
+        if self._function is not None:
+            self._function.branch()
         self.visit(node.else_block)
         self.symbols = self.symbols.parents
 
@@ -206,21 +195,12 @@ class CheckProgramVisitor(NodeVisitor):
         node.type = node.datatype.type
         self.symbols = self.symbols.new_child()
         self.visit(node.arguments)
-        returned = False
-        for statement in node.body:
-            self.visit(statement)
-            if isinstance(statement, ReturnStatement):
-                returned = True
-                if statement.type != node.type:
-                    error(statement.lineno, f'TypeError: returning {statement.type} instead of {node.type}')
-                    node.type = 'error'
-                break
-        if not returned:
+        self._function = Function(node.type)
+        self.visit(node.body)
+        if not self._function.returned:
             if node.type != 'void':
-                error(node.lineno, f'TypeError: missing return statement')
-                node.type = 'error'
-            else:
-                node.type = 'void'
+                error(node.lineno, 'TypeError: missing return statement')
+        self._function = None
         node.symbols = self.symbols
         self.symbols = self.symbols.parents
 
@@ -258,6 +238,13 @@ class CheckProgramVisitor(NodeVisitor):
     def visit_ReturnStatement(self, node):
         self.visit(node.value)
         node.type = node.value.type if node.value is not None else 'void'
+        if self._function is not None:
+            if node.type != self._function.return_type:
+                error(node.lineno, f'TypeError: returning {node.type} instead of {self._function.return_type}')
+                self._function.type = 'error'
+            self._function.return_branch(node.type)
+        else:
+            error(node.lineno, f'TypeError: returning outside a function.')
 
     def visit_PrintStatement(self, node):
         self.visit(node.value)
@@ -318,6 +305,46 @@ class CheckProgramVisitor(NodeVisitor):
             error(node.lineno, f'TypeError: unknown type "{node.name}"')
             node.type = 'error'
 
+class Function:
+    def __init__(self, return_type):
+        self.return_type = return_type
+        self.branches = [Branch()]
+        self._curr_branch = self.branches[0]
+
+    @property
+    def returned(self):
+        return self.branches[0] or (all(self.branches[1:]) and self.branches[1:])
+
+    def branch(self):
+        self.branches.append(Branch())
+        self._curr_branch = self.branches[-1]
+
+    def return_branch(self, return_type):
+        self._curr_branch.return_type = return_type
+        self._curr_branch = self.branches[0]
+
+class Branch:
+    def __init__(self):
+        self.return_type = ''
+
+    def __bool__(self):
+        return bool(self.return_type)
+
+class SymbolMap(ChainMap):
+    def __init__(self, *maps):
+        assert all(isinstance(m, ScopeDict) for m in maps)
+        self.maps = list(maps) or [ScopeDict('global')]
+
+    def new_child(self):
+        return super().new_child(ScopeDict('local'))
+
+class ScopeDict(dict):
+    def __init__(self, scope='local'):
+        self.scope = scope
+
+    def __setitem__(self, key, value):
+        value.scope = self.scope
+        super().__setitem__(key, value)
 
 # ----------------------------------------------------------------------
 #                       DO NOT MODIFY ANYTHING BELOW       

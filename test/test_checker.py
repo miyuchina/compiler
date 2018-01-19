@@ -302,6 +302,37 @@ class TestChecker(TestCase):
         self.assertEqual(visitor.symbols['x'].scope, 'global')
         self.assertEqual(visitor.symbols['foo'].symbols['y'].scope, 'local')
 
+    def test_functions_with_wrong_returns(self):
+        source = """
+                 func error4(x int) int {   // No return statement
+                      print x;
+                 }
+
+                 func error5(x int) int {  // No return
+                      if x < 0 {
+                           return -x;
+                      }
+                 }
+
+                 func noterror6(x int) int {
+                     if x < 0 {
+                          return -x;
+                     } else {
+                          return +x;
+                     }
+                 }
+
+                 func noterror7(x int) int {
+                    while x > 0 {
+                        return 0;
+                    }
+                 }
+                 """
+        self.check_program(source)
+        expected_output = [('2: TypeError: missing return statement',),
+                           ('6: TypeError: missing return statement',)]
+        self.assertEqual(expected_output, self.captured_output)
+
     def mock_print(self, *args, **kwargs):
         self.captured_output.append(args)
 
