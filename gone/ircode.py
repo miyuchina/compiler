@@ -124,7 +124,7 @@ from . import ast
 class Function:
     def __init__(self, name, return_type='void', param_names=None, param_types=None):
         self.name = name
-        self.return_type = name
+        self.return_type = return_type
         self.param_names = param_names or []
         self.param_types = param_types or []
         self.body = []
@@ -247,17 +247,10 @@ class GenerateCode(ast.NodeVisitor):
         module_code = self.code
         param_names = [arg.name for arg in node.arguments]
         param_types = [arg.type for arg in node.arguments]
-        self.code = Function(node.name, node.datatype, param_names, param_types)
-        self.visit(node.arguments)
+        self.code = Function(node.name, node.datatype.type, param_names, param_types)
         self.visit(node.body)
         self.functions.append(self.code)
         self.code = module_code
-
-    def visit_FuncArgument(self, node):
-        target = self.new_register()
-        self.code.append(('ALLOC' + _type_char(node.type), node.name))
-        self.code.append(('STORE' + _type_char(node.type), target, node.name))
-        node.register = target
 
     def visit_FunctionCall(self, node):
         self.visit(node.arguments)
@@ -367,10 +360,13 @@ def main():
         raise SystemExit(1)
 
     source = open(sys.argv[1]).read()
-    code = compile_ircode(source)
+    functions = compile_ircode(source)
 
-    for instr in code:
-        print(instr)
+    for function in functions:
+        print('FUNCTION:', function.name)
+        for code in function:
+            print('\t', code)
+        print('='*80)
 
 if __name__ == '__main__':
     main()

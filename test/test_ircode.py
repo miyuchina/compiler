@@ -309,14 +309,10 @@ class TestIRCode(TestCase):
                  }
                  """
         output = [('__init', []),
-                  ('add', [('ALLOCI', 'x'),
-                           ('STOREI', 'R1', 'x'),
-                           ('ALLOCI', 'y'),
-                           ('STOREI', 'R2', 'y'),
-                           ('LOADI', 'x', 'R3'),
-                           ('LOADI', 'y', 'R4'),
-                           ('ADDI', 'R3', 'R4', 'R5'),
-                           ('RET', 'R5')])]
+                  ('add', [('LOADI', 'x', 'R1'),
+                           ('LOADI', 'y', 'R2'),
+                           ('ADDI', 'R1', 'R2', 'R3'),
+                           ('RET', 'R3')])]
         self._test_functions(source, output)
 
     def test_define_global_and_local_variables(self):
@@ -327,16 +323,14 @@ class TestIRCode(TestCase):
                  }
                  const x = 5;
                  """
-        output = [('__init', [('MOVI', 5, 'R5'),
+        output = [('__init', [('MOVI', 5, 'R4'),
                              ('VARI', 'x'),
-                             ('STOREI', 'R5', 'x')]),
-                  ('foo', [('ALLOCI', 'x'),
-                           ('STOREI', 'R1', 'x'),
-                           ('ALLOCI', 'y'),
-                           ('LOADI', 'x', 'R2'),
-                           ('LOADI', 'y', 'R3'),
-                           ('ADDI', 'R2', 'R3', 'R4'),
-                           ('RET', 'R4')])]
+                             ('STOREI', 'R4', 'x')]),
+                  ('foo', [('ALLOCI', 'y'),
+                           ('LOADI', 'x', 'R1'),
+                           ('LOADI', 'y', 'R2'),
+                           ('ADDI', 'R1', 'R2', 'R3'),
+                           ('RET', 'R3')])]
         self._test_functions(source, output)
 
     def test_function_call(self):
@@ -344,19 +338,15 @@ class TestIRCode(TestCase):
                  func add(x int, y int) int { return x + y; }
                  var x int = add(1, 2);
                  """
-        output = [('__init', [('MOVI', 1, 'R6'),
-                             ('MOVI', 2, 'R7'),
-                             ('CALL', 'add', 'R6', 'R7', 'R8'),
+        output = [('__init', [('MOVI', 1, 'R4'),
+                             ('MOVI', 2, 'R5'),
+                             ('CALL', 'add', 'R4', 'R5', 'R6'),
                              ('VARI', 'x'),
-                             ('STOREI', 'R8', 'x')]),
-                  ('add', [('ALLOCI', 'x'),
-                           ('STOREI', 'R1', 'x'),
-                           ('ALLOCI', 'y'),
-                           ('STOREI', 'R2', 'y'),
-                           ('LOADI', 'x', 'R3'),
-                           ('LOADI', 'y', 'R4'),
-                           ('ADDI', 'R3', 'R4', 'R5'),
-                           ('RET', 'R5')])]
+                             ('STOREI', 'R6', 'x')]),
+                  ('add', [('LOADI', 'x', 'R1'),
+                           ('LOADI', 'y', 'R2'),
+                           ('ADDI', 'R1', 'R2', 'R3'),
+                           ('RET', 'R3')])]
         self._test_functions(source, output)
 
     def test_function_call_with_complex_arguments(self):
@@ -364,20 +354,16 @@ class TestIRCode(TestCase):
                  func add(x int, y int) int { return x + y; }
                  var x int = add(1 + 2, 3);
                  """
-        output = [('__init', [('MOVI', 1, 'R6'),
-                             ('MOVI', 2, 'R7'),
-                             ('ADDI', 'R6', 'R7', 'R8'),
-                             ('MOVI', 3, 'R9'),
-                             ('CALL', 'add', 'R8', 'R9', 'R10'),
-                             ('VARI', 'x'),
-                             ('STOREI', 'R10', 'x')]),
-                  ('add', [('ALLOCI', 'x'),
-                           ('STOREI', 'R1', 'x'),
-                           ('ALLOCI', 'y'),
-                           ('STOREI', 'R2', 'y'),
-                           ('LOADI', 'x', 'R3'),
-                           ('LOADI', 'y', 'R4'),
-                           ('ADDI', 'R3', 'R4', 'R5'),
-                           ('RET', 'R5')])]
+        output = [('__init', [('MOVI', 1, 'R4'),
+                              ('MOVI', 2, 'R5'),
+                              ('ADDI', 'R4', 'R5', 'R6'),
+                              ('MOVI', 3, 'R7'),
+                              ('CALL', 'add', 'R6', 'R7', 'R8'),
+                              ('VARI', 'x'),
+                              ('STOREI', 'R8', 'x')]),
+                  ('add', [('LOADI', 'x', 'R1'),
+                           ('LOADI', 'y', 'R2'),
+                           ('ADDI', 'R1', 'R2', 'R3'),
+                           ('RET', 'R3')])]
         self._test_functions(source, output)
 
