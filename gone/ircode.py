@@ -145,7 +145,7 @@ class GenerateCode(ast.NodeVisitor):
     def __init__(self):
         self.register_count = 0
         self.label_count = 0
-        self.code = Function('_init')
+        self.code = Function('__init')
         self.functions = [self.code]
 
     def new_register(self):

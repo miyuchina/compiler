@@ -308,7 +308,7 @@ class TestIRCode(TestCase):
                      return x + y;
                  }
                  """
-        output = [('_init', []),
+        output = [('__init', []),
                   ('add', [('ALLOCI', 'x'),
                            ('STOREI', 'R1', 'x'),
                            ('ALLOCI', 'y'),
@@ -327,7 +327,7 @@ class TestIRCode(TestCase):
                  }
                  const x = 5;
                  """
-        output = [('_init', [('MOVI', 5, 'R5'),
+        output = [('__init', [('MOVI', 5, 'R5'),
                              ('VARI', 'x'),
                              ('STOREI', 'R5', 'x')]),
                   ('foo', [('ALLOCI', 'x'),
@@ -340,16 +340,37 @@ class TestIRCode(TestCase):
         self._test_functions(source, output)
 
     def test_function_call(self):
-        self.maxDiff = None
         source = """
                  func add(x int, y int) int { return x + y; }
                  var x int = add(1, 2);
                  """
-        output = [('_init', [('MOVI', 1, 'R6'),
+        output = [('__init', [('MOVI', 1, 'R6'),
                              ('MOVI', 2, 'R7'),
                              ('CALL', 'add', 'R6', 'R7', 'R8'),
                              ('VARI', 'x'),
                              ('STOREI', 'R8', 'x')]),
+                  ('add', [('ALLOCI', 'x'),
+                           ('STOREI', 'R1', 'x'),
+                           ('ALLOCI', 'y'),
+                           ('STOREI', 'R2', 'y'),
+                           ('LOADI', 'x', 'R3'),
+                           ('LOADI', 'y', 'R4'),
+                           ('ADDI', 'R3', 'R4', 'R5'),
+                           ('RET', 'R5')])]
+        self._test_functions(source, output)
+
+    def test_function_call_with_complex_arguments(self):
+        source = """
+                 func add(x int, y int) int { return x + y; }
+                 var x int = add(1 + 2, 3);
+                 """
+        output = [('__init', [('MOVI', 1, 'R6'),
+                             ('MOVI', 2, 'R7'),
+                             ('ADDI', 'R6', 'R7', 'R8'),
+                             ('MOVI', 3, 'R9'),
+                             ('CALL', 'add', 'R8', 'R9', 'R10'),
+                             ('VARI', 'x'),
+                             ('STOREI', 'R10', 'x')]),
                   ('add', [('ALLOCI', 'x'),
                            ('STOREI', 'R1', 'x'),
                            ('ALLOCI', 'y'),
