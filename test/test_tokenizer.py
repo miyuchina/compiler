@@ -128,6 +128,13 @@ class TestTokenizer(TestCase):
         for token, expected in zip(self.lexer.tokenize(text), tokens):
             self.assertEqual(token.type, expected)
 
+    # for loop
+    def test_for_loop(self):
+        text = 'for'
+        tokens = ['FOR']
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:

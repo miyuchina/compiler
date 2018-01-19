@@ -105,7 +105,7 @@ class GoneLexer(Lexer):
 
     tokens = {
         # keywords
-        'PRINT', 'CONST', 'VAR', 'IF', 'ELSE', 'WHILE', 'FUNC', 'RETURN',
+        'PRINT', 'CONST', 'VAR', 'IF', 'ELSE', 'WHILE', 'FUNC', 'RETURN', 'FOR',
                  
         # Identifiers
         'ID',
@@ -271,7 +271,7 @@ class GoneLexer(Lexer):
     @_(r'\b[a-zA-Z_][a-zA-Z_0-9]*\b')
     def ID(self, token):
         keywords = {'const', 'var', 'print', 'true', 'false',
-                    'if', 'else', 'while', 'func', 'return'}
+                    'if', 'else', 'while', 'func', 'return', 'for'}
         if token.value in keywords:
             token.type = token.value.upper()
         return token
