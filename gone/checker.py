@@ -155,14 +155,14 @@ class CheckProgramVisitor(NodeVisitor):
             return
         if node.value is not None:
             self.visit(node.value)
-            if node.type != node.value.type:
+            if node.value.type != 'error' and node.type != node.value.type:
                 error(node.lineno, f'TypeError: assigning type {node.value.type} to "{node.name.name}" of type {node.type}')
 
     def visit_Assignment(self, node):
         node.name.usage = 'write'
         self.visit(node.name)
         self.visit(node.value)
-        if node.name.type != node.value.type:
+        if 'error' not in {node.name.type, node.value.type} and node.name.type != node.value.type:
             error(node.lineno, f'TypeError: assigning type {node.value.type} to "{node.name.name}" of type {node.name.type}')
 
     def visit_IfStatement(self, node):
@@ -286,14 +286,14 @@ class CheckProgramVisitor(NodeVisitor):
         self.visit(node.left)
         self.visit(node.right)
         node.type = check_binop(node.left.type, node.op, node.right.type)
-        if node.type == 'error':
+        if 'error' not in {node.left.type, node.right.type} and node.type == 'error':
             msg = f'TypeError: performing "{node.op}" on {node.left.type} and {node.right.type}'
             error(node.lineno, msg)
 
     def visit_UnaryOp(self, node):
         self.visit(node.value)
         node.type = check_unaryop(node.op, node.value.type)
-        if node.type == 'error':
+        if node.value.type != 'error' and node.type == 'error':
             msg = f'TypeError: performing "{node.op}" on {node.value.type}'
             error(node.lineno, msg)
 

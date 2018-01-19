@@ -27,8 +27,7 @@ class TestChecker(TestCase):
         for symbol in ('pi', 'x'):
             self.assertTrue(symbol in self.checker.symbols)
         expected_output = [('6: NameError: symbol "y" undefined.',),
-                           ('9: NameError: symbol "z" undefined.',),
-                           ('9: TypeError: assigning type int to "z" of type error',)]
+                           ('9: NameError: symbol "z" undefined.',)]
         self.assertEqual(expected_output, self.captured_output)
 
     # checktest1
@@ -102,7 +101,6 @@ class TestChecker(TestCase):
         self.check_program(source)
         expected_output = [('1: NameError: symbol "float" undefined.',),
                            ('2: NameError: symbol "int" undefined.',),
-                           ('2: TypeError: assigning type int to "int" of type error',),
                            ('3: NameError: cannot declare variable with name int',)]
         self.assertEqual(expected_output, self.captured_output)
 
@@ -120,8 +118,7 @@ class TestChecker(TestCase):
                   "var c bool = (a != 0) || (b != 0);\n"
                   "var d bool = a || b;\n")
         self.check_program(source)
-        expected_output = [('4: TypeError: performing "||" on int and int',),
-                           ('4: TypeError: assigning type error to "d" of type bool',)]
+        expected_output = [('4: TypeError: performing "||" on int and int',)]
         self.assertEqual(expected_output, self.captured_output)
 
     def test_boolean_unary_operation_types(self):
@@ -130,8 +127,7 @@ class TestChecker(TestCase):
                   "var b int = 3;\n"
                   "b = !b;\n")
         self.check_program(source)
-        expected_output = [('4: TypeError: performing "!" on int',),
-                           ('4: TypeError: assigning type error to "b" of type int',)]
+        expected_output = [('4: TypeError: performing "!" on int',),]
         self.assertEqual(expected_output, self.captured_output)
 
     # project7
@@ -257,8 +253,7 @@ class TestChecker(TestCase):
     def test_undefined_function_call(self):
         source = "var a int = add(1, 2);\n"
         self.check_program(source)
-        expected_output = [('1: NameError: symbol "add" undefined.',),
-                           ('1: TypeError: assigning type error to "a" of type int',)]
+        expected_output = [('1: NameError: symbol "add" undefined.',)]
         self.assertEqual(expected_output, self.captured_output)
 
     def test_function_call_with_wrong_number_of_arguments(self):
@@ -267,8 +262,7 @@ class TestChecker(TestCase):
                   "}\n"
                   "var a int = add(1, 2, 3);\n")
         self.check_program(source)
-        expected_output = [('4: TypeError: add() takes 2 arguments but 3 given',),
-                           ('4: TypeError: assigning type error to "a" of type int',)]
+        expected_output = [('4: TypeError: add() takes 2 arguments but 3 given',)]
         self.assertEqual(expected_output, self.captured_output)
 
     def test_function_call_with_wrong_argument_types(self):
@@ -277,16 +271,14 @@ class TestChecker(TestCase):
                   "}\n"
                   "var a int = add(1, 2.0);\n")
         self.check_program(source)
-        expected_output = [('4: TypeError: add() expecting (\'int\', \'int\'), got (\'int\', \'float\')',),
-                           ('4: TypeError: assigning type error to "a" of type int',)]
+        expected_output = [('4: TypeError: add() expecting (\'int\', \'int\'), got (\'int\', \'float\')',),]
         self.assertEqual(expected_output, self.captured_output)
 
     def test_calling_a_non_function(self):
         source = ("var add void;\n"
                   "var a int = add(1, 2);\n")
         self.check_program(source)
-        expected_output = [('2: TypeError: "add" is not callable.',),
-                           ('2: TypeError: assigning type error to "a" of type int',)]
+        expected_output = [('2: TypeError: "add" is not callable.',),]
         self.assertEqual(expected_output, self.captured_output)
 
     def test_global_and_local_attributes(self):
