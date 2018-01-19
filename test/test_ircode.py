@@ -328,6 +328,36 @@ class TestIRCode(TestCase):
                   ('LABEL', 'B3'),]
         self._test_code(source, output)
 
+    def test_for_statements(self):
+        source = """
+                 for (var i int = 0; i < 10; i = i + 1;) {
+                     print i;
+                     break;
+                     continue;
+                 }
+                 """
+        output = [('MOVI', 0, 'R1'),
+                  ('VARI', 'i'),
+                  ('STOREI', 'R1', 'i'),
+                  ('BRANCH', 'B1'),
+                  ('LABEL', 'B1'),
+                  ('LOADI', 'i', 'R2'),
+                  ('MOVI', 10, 'R3'),
+                  ('CMPI', '<', 'R2', 'R3', 'R4'),
+                  ('CBRANCH', 'R4', 'B2', 'B3'),
+                  ('LABEL', 'B2'),
+                  ('LOADI', 'i', 'R5'),
+                  ('PRINTI', 'R5'),
+                  ('BRANCH', 'B3'),
+                  ('BRANCH', 'B1'),
+                  ('LOADI', 'i', 'R6'),
+                  ('MOVI', 1, 'R7'),
+                  ('ADDI', 'R6', 'R7', 'R8'),
+                  ('STOREI', 'R8', 'i'),
+                  ('BRANCH', 'B1'),
+                  ('LABEL', 'B3'),]
+        self._test_code(source, output)
+
     def test_function_declaration(self):
         source = """
                  func add(x int, y int) int {

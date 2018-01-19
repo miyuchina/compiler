@@ -239,7 +239,12 @@ class GenerateCode(ast.NodeVisitor):
         self.visit(node.condition)
         self.code.append(('CBRANCH', node.condition.register, loop_branch, exit_branch))
         self.code.append(('LABEL', loop_branch))
-        self.visit(node.loop_block)
+        for statement in node.loop_block:
+            self.visit(statement)
+            if getattr(statement, 'name', None) == 'break':
+                self.code.append(('BRANCH', exit_branch))
+            if getattr(statement, 'name', None) == 'continue':
+                self.code.append(('BRANCH', cond_branch))
         self.code.append(('BRANCH', cond_branch))
         self.code.append(('LABEL', exit_branch))
 
@@ -253,7 +258,12 @@ class GenerateCode(ast.NodeVisitor):
         self.visit(node.cond)
         self.code.append(('CBRANCH', node.cond.register, loop_branch, exit_branch))
         self.code.append(('LABEL', loop_branch))
-        self.visit(node.body)
+        for statement in node.body:
+            self.visit(statement)
+            if getattr(statement, 'name', None) == 'break':
+                self.code.append(('BRANCH', exit_branch))
+            if getattr(statement, 'name', None) == 'continue':
+                self.code.append(('BRANCH', cond_branch))
         self.visit(node.step)
         self.code.append(('BRANCH', cond_branch))
         self.code.append(('LABEL', exit_branch))

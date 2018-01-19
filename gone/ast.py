@@ -147,6 +147,12 @@ class FuncDeclaration(Statement):
     datatype  : DataType
     body      : [ Statement ]
 
+class ContinueStatement(Statement):
+    name : str
+
+class BreakStatement(Statement):
+    name : str
+
 class ReturnStatement(Statement):
     value : (Expression, type(None))
 

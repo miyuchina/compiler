@@ -146,6 +146,8 @@ class GoneParser(Parser):
        'while_statement',
        'for_statement',
        'func_statement',
+       'break_statement',
+       'continue_statement',
        'return_statement',
        'print_statement SEMI')
     def statement(self, p):
@@ -242,6 +244,14 @@ class GoneParser(Parser):
     @_('FUNC ID LPAREN arguments RPAREN datatype LCBRACE block RCBRACE')
     def func_statement(self, p):
         return FuncDeclaration(p.ID, p.arguments, p.datatype, p.block, lineno=p.lineno)
+
+    @_('BREAK SEMI')
+    def break_statement(self, p):
+        return BreakStatement(p.BREAK, lineno=p.lineno)
+
+    @_('CONTINUE SEMI')
+    def continue_statement(self, p):
+        return ContinueStatement(p.CONTINUE, lineno=p.lineno)
 
     @_('RETURN expression SEMI')
     def return_statement(self, p):

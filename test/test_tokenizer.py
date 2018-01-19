@@ -135,6 +135,13 @@ class TestTokenizer(TestCase):
         for token, expected in zip(self.lexer.tokenize(text), tokens):
             self.assertEqual(token.type, expected)
 
+    # break; continue
+    def test_break_continue(self):
+        text = 'break continue'
+        tokens = text.upper().split()
+        for token, expected in zip(self.lexer.tokenize(text), tokens):
+            self.assertEqual(token.type, expected)
+
 def mock_print(*args, **kwargs):
     import sys
     if len(kwargs) == 0:
