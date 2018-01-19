@@ -325,6 +325,41 @@ class TestChecker(TestCase):
                            ('6: TypeError: missing return statement',)]
         self.assertEqual(expected_output, self.captured_output)
 
+    def test_for_loops(self):
+        source = """
+                 for (var i int = 0; i < 10; i = i + 1;) {
+                     print i;
+                 }
+                 """
+        self.check_program(source)
+        expected_output = []
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_for_loops_with_wrong_init(self):
+        source = """
+                 for (i = 0; i < 10; i = i + 1;) {
+                     print i;
+                 }
+                 """
+        self.check_program(source)
+        expected_output = [('2: NameError: symbol "i" undefined.',),
+                           ('2: NameError: symbol "i" undefined.',),
+                           ('2: TypeError: for-statement condition is not a boolean',),
+                           ('2: NameError: symbol "i" undefined.',),
+                           ('2: NameError: symbol "i" undefined.',),
+                           ('3: NameError: symbol "i" undefined.',)]
+        self.assertEqual(expected_output, self.captured_output)
+
+    def test_for_loops_with_wrong_cond(self):
+        source = """
+                 for (var i int = 0; i + 10; i = i + 1;) {
+                     print i;
+                 }
+                 """
+        self.check_program(source)
+        expected_output = [('2: TypeError: for-statement condition is not a boolean',)]
+        self.assertEqual(expected_output, self.captured_output)
+
     def mock_print(self, *args, **kwargs):
         self.captured_output.append(args)
 

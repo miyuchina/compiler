@@ -188,6 +188,14 @@ class CheckProgramVisitor(NodeVisitor):
         self.visit(node.loop_block)
         self.symbols = self.symbols.parents
 
+    def visit_ForStatement(self, node):
+        self.visit(node.init)
+        self.visit(node.cond)
+        if node.cond.type != 'bool':
+            error(node.lineno, 'TypeError: for-statement condition is not a boolean')
+        self.visit(node.step)
+        self.visit(node.body)
+
     def visit_FuncDeclaration(self, node):
         node.callable = True
         self.symbols[node.name] = node
