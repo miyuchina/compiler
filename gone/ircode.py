@@ -243,6 +243,21 @@ class GenerateCode(ast.NodeVisitor):
         self.code.append(('BRANCH', cond_branch))
         self.code.append(('LABEL', exit_branch))
 
+    def visit_ForStatement(self, node):
+        self.visit(node.init)
+        cond_branch = self.new_label()
+        loop_branch = self.new_label()
+        exit_branch = self.new_label()
+        self.code.append(('BRANCH', cond_branch))
+        self.code.append(('LABEL', cond_branch))
+        self.visit(node.cond)
+        self.code.append(('CBRANCH', node.cond.register, loop_branch, exit_branch))
+        self.code.append(('LABEL', loop_branch))
+        self.visit(node.body)
+        self.visit(node.step)
+        self.code.append(('BRANCH', cond_branch))
+        self.code.append(('LABEL', exit_branch))
+
     def visit_FuncDeclaration(self, node):
         module_code = self.code
         param_names = [arg.name for arg in node.arguments]
