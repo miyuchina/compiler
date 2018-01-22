@@ -49,7 +49,7 @@ Here's how to manually walk through the different compilation stages.
 
 ### lexing / tokenizing
 
-```python
+```sh
 $ python3 -m gone.tokenizer Tests/mandel.g
 Token(type='CONST', value='const', lineno=3, index=16)
 Token(type='ID', value='xmin', lineno=3, index=22)
@@ -64,7 +64,7 @@ line numbers and indices.
 
 ### parsing
 
-```python
+```sh
 $ python3 -m gone.parser Tests/mandel.g
 3: ConstDeclaration(name=SimpleLocation, value=UnaryOp)
 3:     SimpleLocation(name='xmin')
@@ -196,4 +196,30 @@ We can feed the output into Clang, with some bootstrapping code written in C:
 python3 -m gone.compile Tests/mandel.g
 ./a.out
 ```
+
+## Supported syntax
+
+* numeric literals:
+
+    * integers (`1234`, `0x1234`);
+    * floats (`1.23`, `.123`, `123.`, `1.23e-1`);
+
+* character literals (`a`, `\n`, `\x3f`, `\\`);
+
+* boolean literals (`true`, `false`);
+
+* type annotations (`int`, `float`, `char`, `bool`, `void`);
+
+* operators:
+
+    * arithmetic operators (`+`, `-`, `*`, `/`);
+    * boolean operators (`<`, `>`, `==`, `!=`, `&&`, `||`, `!`);
+    * augmented assignments (`+=`, `-=`);
+    * increment and decrement (`++`, `--`);
+
+* conditional statements (`if`, `else`, `while`, `for`);
+
+    * `break` and `continue` statements;
+
+* function definitions (`func`, `return`).
 
