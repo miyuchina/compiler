@@ -26,7 +26,7 @@ void _print_byte(char c) {
 
 /* Bootstrapping code for a stand-alone executable */
 
-/*#ifdef NEED_MAIN*/
+#ifdef NEED_MAIN
 extern void __init(void);
 extern int _gone_main(void);
 
@@ -34,4 +34,4 @@ int main() {
   __init();
   return _gone_main();
 }
-/*#endif*/
+#endif
